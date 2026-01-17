@@ -1,18 +1,18 @@
 // app/lib/actions.ts
-'use server';
-
-import { createClient } from './supabase/server';
-import { redirect } from 'next/navigation';
+"use server";
+import { z } from "zod";
+import { createClient } from "./supabase/server";
+import { redirect } from "next/navigation";
 
 export async function authenticate(
   prevState: string | undefined,
-  formData: FormData,
+  formData: FormData
 ) {
   const supabase = await createClient();
 
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
-  const callbackUrl = formData.get('callbackUrl') as string;
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+  const callbackUrl = formData.get("callbackUrl") as string;
   // Sign in
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -23,7 +23,7 @@ export async function authenticate(
     return error?.message ?? "Invalid credentials";
   }
   // redirect to callbackUrl if present
-  if (callbackUrl && callbackUrl !== '') {
+  if (callbackUrl && callbackUrl !== "") {
     redirect(callbackUrl);
   }
 
@@ -43,14 +43,12 @@ export async function authenticate(
     case "admin":
       redirect("/admin");
     case "landlord":
-      redirect("/landlord/dashboard");
+      redirect("/add-listings");
     case "student":
     default:
       redirect("/dashboard");
   }
 }
-
-
 
 export async function register(
   prevState: string | undefined,
@@ -60,15 +58,15 @@ export async function register(
 
   // Sign up (metadata goes to trigger)
   const { data, error } = await supabase.auth.signUp({
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
+    email: formData.get("email") as string,
+    password: formData.get("password") as string,
     options: {
       data: {
-        full_name: formData.get('full_name'),
-        phone_number: formData.get('phone_number'),
-        role: formData.get('role') || 'student',
-        school: formData.get('school'),
-        address: formData.get('address'),
+        full_name: formData.get("full_name"),
+        phone_number: formData.get("phone_number"),
+        role: formData.get("role") || "student",
+        school: formData.get("school"),
+        address: formData.get("address"),
       },
     },
   });
@@ -93,7 +91,7 @@ export async function register(
     case "admin":
       redirect("/admin");
     case "landlord":
-      redirect("/landlord/dashboard");
+      redirect("/add-listings ");
     default:
       redirect("/dashboard");
   }
@@ -114,13 +112,12 @@ export async function updateProfile(
   if (!user) {
     return "User not found";
   }
-
   // Update user profile
   const updates = {
-    full_name: formData.get('full_name') as string,
-    phone_number: formData.get('phone_number') as string,
-    school: formData.get('school') as string,
-    address: formData.get('address') as string,
+    full_name: formData.get("full_name") as string,
+    phone_number: formData.get("phone_number") as string,
+    school: formData.get("school") as string,
+    address: formData.get("address") as string,
   };
 
   const { error } = await supabase
@@ -133,4 +130,215 @@ export async function updateProfile(
   }
 
   return "Profile updated successfully";
+}
+
+
+export async function logout() {
+  const supabase = await createClient();
+
+  await supabase.auth.signOut();
+
+  redirect("/auth/login");
+}
+
+// add new listings
+
+
+// validation schema
+const listingSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  price_per_year: z.number().min(0, "Price must be non-negative"),
+  address: z.string().min(1, "Address is required"),
+  school: z.string(),
+});
+
+// state
+// lib/types.ts
+export type AddListingState = {
+  success?: boolean;
+  message?: string;
+  error?: string;
+  fieldErrors?: string[];
+};
+
+
+
+import { createClient as createServiceClient } from "@supabase/supabase-js";
+
+export async function uploadImages(files: FormData) {
+  // Use service role to bypass RLS
+  const supabase = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY! // Add this to .env.local
+  );
+
+  const fileList = files.getAll("files") as File[];
+  
+  const uploadPromises = fileList.map(async (file) => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${crypto.randomUUID()}.${fileExt}`;
+    
+    const { error } = await supabase.storage
+      .from("property-images")
+      .upload(fileName, file);
+
+    if (error) throw error;
+
+    const { data } = supabase.storage
+      .from("property-images")
+      .getPublicUrl(fileName);
+
+    return data.publicUrl;
+  });
+
+  return await Promise.all(uploadPromises);
+}
+
+export async function addListing(
+  prevState: AddListingState,
+  formData: FormData,
+  imageUrls: string[]
+): Promise<AddListingState> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  console.log("Current user:", user?.id);
+
+  if (!user) {
+    return { error: "Unauthorized user" };
+  }
+
+  // Validate form data
+  const listingData = {
+    title: formData.get("title") as string,
+    description: formData.get("description") as string | null,
+    price_per_year: Number(formData.get("price_per_year")),
+    address: formData.get("address") as string,
+    school: formData.get("school") as string | null,
+  };
+
+  const parseResult = listingSchema.safeParse(listingData);
+
+  if (!parseResult.success) {
+    return {
+      error: "Form validation failed",
+      fieldErrors: z.treeifyError(parseResult.error).errors,
+    };
+  }
+
+  const dataToInsert = {
+    landlord_id: user.id,
+    ...parseResult.data,
+  };
+
+  console.log("Attempting to insert:", dataToInsert);
+
+  // Insert new listing
+  const { data: listing, error } = await supabase
+    .from("listings")
+    .insert([dataToInsert])
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Listing insert error:", {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
+    return { error: `${error.message} (${error.code})` };
+  }
+
+  console.log("Listing created:", listing);
+
+  // Insert listing images
+  const imageRows = imageUrls.map(url => ({
+    listing_id: listing.id,
+    image_url: url,
+  }));
+
+  console.log("Attempting to insert images:", imageRows);
+
+  const { error: imageError } = await supabase
+    .from('listing_images')
+    .insert(imageRows);
+
+  if (imageError) {
+    console.error("Image insert error:", {
+      message: imageError.message,
+      code: imageError.code,
+      details: imageError.details,
+      hint: imageError.hint,
+    });
+    return { error: `${imageError.message} (${imageError.code})` };
+  }
+
+  return { success: true, message: "Listing added successfully" };
+}
+
+// update existing listing
+export async function updateListing(
+  prevState: AddListingState,
+  formData: FormData,
+  listingId: number
+): Promise<AddListingState> {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Unauthorized user" };
+  }
+
+  // Validate form data
+  const listingData = {
+    title: formData.get("title"),
+    description: formData.get("description"),
+    price_per_year: Number(formData.get("price_per_year")),
+    address: formData.get("address"),
+    school: formData.get("school"),
+  };
+
+  const parseResult = listingSchema.safeParse(listingData);
+
+  if (!parseResult.success) {
+    return {
+      error: "Form validation failed",
+      fieldErrors: z.treeifyError(parseResult.error).errors,
+    };
+  }
+
+  const dataToUpdate = {
+    landlord_id: user.id,
+    ...parseResult.data,
+  };
+
+  console.log("Attempting to update:", dataToUpdate);
+
+  // Update listing
+  const { data: listing, error } = await supabase
+    .from("listings")
+    .update(dataToUpdate)
+    .eq("id", listingId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Listing update error:", {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
+    return { error: `${error.message} (${error.code})` };
+  }
+
+  console.log("Listing updated:", listing);
+
+  return { success: true, message: "Listing updated successfully" };
 }

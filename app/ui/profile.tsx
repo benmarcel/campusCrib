@@ -35,7 +35,7 @@ export function Profile({ profile }: { profile: ProfileProps }) {
       </div>
 
       {/* Extra info card */}
-      <div className="w-full max-w-md bg-white rounded-xl border shadow-sm p-5 space-y-4 text-left">
+      <div className="gap-4 w-full max-w-lg bg-white rounded-xl border shadow-sm p-5 space-y-4 text-left">
         <InfoRow
           icon={<Phone size={18} />}
           label="Phone number"

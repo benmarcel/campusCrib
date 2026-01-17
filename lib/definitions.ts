@@ -43,7 +43,7 @@ export type Listing = {
   landlord_id: UUID;
   title: string;
   description: string | null;
-  price_per_month: number;
+  price_per_year: number;
   address: string;
   is_verified: boolean;
   school: string | null;
@@ -56,25 +56,49 @@ export type CreateListing = {
   description?: string | null;
   price_per_year: number;
   address: string;
-  school?: string | null;
+  school: string | null;
 };
 
 export type UpdateListing = Partial<Omit<Listing, "id" | "landlord_id" | "created_at">>;
 
+export interface ListingDetails {
+  id: string;
+  title: string;
+  description: string;
+  price_per_year: number;
+  created_at: string;
+  // Add any other listing columns here...
 
+  // Embedded related data
+  listing_images: ListingImage[];
+  reviews: Review[];
+}
+
+export interface ListingImage {
+  url: string;
+}
+
+export interface Reviews {
+  rating: number;
+  comment: string;
+  student: {
+    full_name: string;
+    avatar_url?: string;
+  };
+}
 //    LISTING IMAGES
 
-export type ListingImage = {
-  id: UUID;
-  listing_id: UUID;
-  image_url: string;
-  created_at: Timestamp;
-};
+// export type ListingImage = {
+//   id: UUID;
+//   listing_id: UUID;
+//   image_url: string;
+//   created_at: Timestamp;
+// };
 
-export type CreateListingImage = {
-  listing_id: UUID;
-  image_url: string;
-};
+// export type CreateListingImage = {
+//   listing_id: UUID;
+//   image_url: string;
+// };
 
 //   BOOKINGS
 
