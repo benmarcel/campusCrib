@@ -1,5 +1,5 @@
 import { getProfile } from "@/lib/data";
-import { Profile } from "@/app/ui/profile";
+import { Profile } from "@/app/ui/components/profile";
 
 export default async function ProfilePage() {
   const profile = await getProfile();

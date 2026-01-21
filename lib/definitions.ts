@@ -38,28 +38,22 @@ export type UpdateProfile = Partial<Omit<Profile, "id">>;
 //    LISTINGS
 
 
-export type Listing = {
+export type Apartment = {
   id: UUID;
   landlord_id: UUID;
   title: string;
-  description: string | null;
+  description: string;
   price_per_year: number;
   address: string;
   is_verified: boolean;
-  school: string | null;
+  is_active: boolean;
+  school: string;
   created_at: Timestamp;
 };
 
-export type CreateListing = {
-  landlord_id: UUID;
-  title: string;
-  description?: string | null;
-  price_per_year: number;
-  address: string;
-  school: string | null;
-};
 
-export type UpdateListing = Partial<Omit<Listing, "id" | "landlord_id" | "created_at">>;
+
+export type UpdateListing = Partial<Omit<Apartment, "id" | "landlord_id" | "created_at">>;
 
 export interface ListingDetails {
   id: string;
@@ -86,19 +80,24 @@ export interface Reviews {
     avatar_url?: string;
   };
 }
-//    LISTING IMAGES
+export type ApartmentWithImages = {
+  id: string;
+  landlord_id: string;
+  title: string;
+  description: string | null;
+  price_per_year: number;
+  address: string;
+  school: string | null;
+  is_verified: boolean;
+  created_at: string;
+  updated_at: string;
+  is_active: boolean;
 
-// export type ListingImage = {
-//   id: UUID;
-//   listing_id: UUID;
-//   image_url: string;
-//   created_at: Timestamp;
-// };
+  listing_images: {
+    image_url: string;
+  }[];
+};
 
-// export type CreateListingImage = {
-//   listing_id: UUID;
-//   image_url: string;
-// };
 
 //   BOOKINGS
 
@@ -141,24 +140,5 @@ export type CreateReview = {
   comment?: string | null;
 };
 
-/* =========================
-   JOINED / COMPOSITE TYPES
-========================= */
 
-// export type ListingWithLandlord = Listing & {
-//   landlord: Pick<Profile, "id" | "full_name" | "phone_number" | "avatar_url">;
-// };
 
-export type ListingWithImages = Listing & {
-  images: ListingImage[];
-};
-
-export type ListingWithReviews = Listing & {
-  reviews: Review[];
-};
-
-export type FullListing = Listing &
-  ListingWithImages &
-  ListingWithReviews & {
-    landlord: Profile;
-  };
