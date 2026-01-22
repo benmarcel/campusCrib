@@ -43,10 +43,10 @@ export async function authenticate(
     case "admin":
       redirect("/admin");
     case "landlord":
-      redirect("/dashboard/rental-apartment");
+      redirect("/landlord/dashboard");
     case "student":
     default:
-      redirect("/dashboard");
+      redirect("/apartments");
   }
 }
 
@@ -93,7 +93,7 @@ export async function register(
     case "landlord":
       redirect("/dashboard/rental-apartment");
     default:
-      redirect("/dashboard");
+      redirect("/apartments");
   }
 }
 
@@ -151,7 +151,7 @@ const apartmentSchema = z.object({
   price_per_year: z.number().min(0, "Price must be non-negative"),
   address: z.string().min(1, "Address is required"),
   school: z.string(),
-  school: z.string().optional(),
+  status: z.enum(["active", "inactive"]).optional(),
 });
 
 // state
