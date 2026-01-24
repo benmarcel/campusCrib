@@ -241,7 +241,7 @@ export async function addApartment(
 
   // Insert new listing
   const { data: listing, error } = await supabase
-    .from("listings")
+    .from("apartments")
     .insert([dataToInsert])
     .select()
     .single();
@@ -267,7 +267,7 @@ export async function addApartment(
   console.log("Attempting to insert images:", imageRows);
 
   const { error: imageError } = await supabase
-    .from('listing_images')
+    .from('apartment_images')
     .insert(imageRows);
 
   if (imageError) {
@@ -280,11 +280,9 @@ export async function addApartment(
     return { error: `${imageError.message} (${imageError.code})` };
   }
 
-   setTimeout(() => {
-    
-    redirect("/dashboard/rental-apartment");
-  }, 1000);
-  return { success: true, message: "Listing added successfully" };
+ 
+  redirect("/landlord/dashboard");
+  // return { success: true, message: "Listing added successfully" };
 }
 
 // update existing listing
@@ -317,7 +315,7 @@ export async function updateApartment(
 
   //  Ownership check
   const { data: existingListing } = await supabase
-    .from("listings")
+    .from("apartments")
     .select("landlord_id")
     .eq("id", listingId)
     .single();
@@ -327,17 +325,15 @@ export async function updateApartment(
   }
 
   const { error } = await supabase
-    .from("listings")
+    .from("apartments")
     .update(parseResult.data)
     .eq("id", listingId);
 
   if (error) {
     return { error: error.message };
   }
-  setTimeout(() => {
-    
-    redirect("/dashboard/rental-apartment");
-  }, 1000);
-  return { success: true, message: "Listing updated successfully" };
+  
+  redirect("/landlords/dashboard");
+  // return { success: true, message: "Listing updated successfully" };
 }
 

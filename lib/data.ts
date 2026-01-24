@@ -1,9 +1,10 @@
 
-
-import type { Profile, Apartment, ApartmentWithImages} from "./definitions";
+import type { Profile, Apartment, ApartmentWithImages, ApartmentWithReviewCount, ApartmentFilters, ApartmentDetail} from "./definitions";
 import { createClient } from "./supabase/server";
 import { redirect } from "next/navigation";
 import { cookies } from 'next/headers';
+
+// get user profile
 export async function getProfile(): Promise<Profile> {
   const supabase = await createClient();
 
@@ -38,34 +39,101 @@ export async function getProfile(): Promise<Profile> {
   };
 }
 
+// get partial profile for navbar
+import { cache } from "react"
+
+export const getUserProfile = cache(async (userId: string) => {
+  const supabase = await createClient()
+
+  const { data } = await supabase
+    .from("profiles")
+    .select("role, avatar_url, full_name")
+    .eq("id", userId)
+    .single()
+
+  return data
+})
+// 
+
 // get all listings
-export async function getAllApartments(): Promise<Apartment[]> {
-  const supabase = await createClient();
+export async function getAllApartments(
+  filters?: ApartmentFilters
+): Promise<ApartmentWithReviewCount[]> {
+  const supabase = await createClient()
 
- const { data: listings, error } = await supabase
-  .from('listings')
-  .select(`
-    *,
-    listing_images (
-      url
+  let query = supabase
+    .from("apartments")
+    .select(
+      `
+      *,
+      apartment_images (
+        image_url
+      ),
+      reviews:reviews(count)
+    `
     )
-  `)
-  // Optional: Limit to only 1 image per listing for performance
-  .limit(1, { foreignTable: 'listing_images' });
+    .eq("is_active", true)
+    .limit(1, { foreignTable: "apartment_images" })
 
-  if (error) {
-    console.error(error);
-    return [];
+  // SEARCH (location)
+  if (filters?.location) {
+    query = query.or(
+      `address.ilike.%${filters.location}%`
+    )
   }
 
-  return listings;
-} 
+ //  PRICE RANGE FILTER
+  if (filters?.priceRange) {
+    if (filters.priceRange.includes("+")) {
+      // Handle "300000+"
+      const min = parseInt(filters.priceRange.replace("+", ""), 10);
+      query = query.gte("price_per_year", min);
+    } else if (filters.priceRange.includes("-")) {
+      // Handle "100000 - 150000"
+      const [minStr, maxStr] = filters.priceRange.split("-");
+      const min = parseInt(minStr.trim(), 10);
+      const max = parseInt(maxStr.trim(), 10);
+      
+      query = query.gte("price_per_year", min).lte("price_per_year", max);
+    }
+  }
+
+  // LOCATION FILTER
+  if (filters?.school) {
+    query = query.eq("school", filters.school)
+  }
+
+  // HOUSE TYPE FILTER
+  if (filters?.houseType) {
+  query = query.ilike("title", `%${filters.houseType}%`);
+}
+
+  const { data, error } = await query
+
+  if (error) {
+    console.error("Error fetching apartments:", error)
+    return []
+  }
+
+  console.log("Fetched apartments:", data)
+
+  if (!data) {
+    return []
+  }
+  // Normalize review count
+  return data.map((listing) => ({
+    ...listing,
+    reviews_count: listing.reviews?.[0]?.count ?? 0,
+  }))
+
+}
+
 
 export async function getApartmentById(listing_id: string): Promise<Apartment> {
     const supabase = await createClient();
 
-    const { data: listing, error } = await supabase
-      .from('listings')
+    const { data: apartment, error } = await supabase
+      .from('apartments')
       .select('*')
       .eq('id', listing_id)
       .maybeSingle(); // Use maybeSingle to avoid crashing if empty
@@ -75,26 +143,26 @@ export async function getApartmentById(listing_id: string): Promise<Apartment> {
         throw new Error('Database connection failed');
       }
 
-      if (!listing) {
+      if (!apartment) {
         console.error("No listing found with ID:", listing_id);
         throw new Error('Listing not found');
       }
 
-      return listing;
+      return apartment;
 }
 
 // for listing details page
-export async function getApartmentDetailsById (listing_id: string) {
+export async function getApartmentDetailsById (apartment_id: string){
    const supabase = await createClient();
 const { data, error } = await supabase
-  .from('listings')
+  .from('apartments')
   .select(`
     title, 
     description,
     price_per_year,
     address,
     created_at,
-    listing_images (
+    apartment_images (
       image_url
     ),
     reviews (
@@ -106,7 +174,7 @@ const { data, error } = await supabase
       )
     )
   `)
-  .eq('id', listing_id )
+  .eq('id', apartment_id )
   .single();
 
   if (error) {
@@ -125,7 +193,7 @@ export async function getLoggedinIser()
   const { data: { user } } = await supabase.auth.getUser();
     return user;
 }
-// get listing by landlord id
+// get apartment by landlord id
 export async function getApartmentsByLandlordId (): Promise<ApartmentWithImages[]> {
 
   await cookies();
@@ -133,8 +201,8 @@ export async function getApartmentsByLandlordId (): Promise<ApartmentWithImages[
   
   const { data: { user } } = await supabase.auth.getUser();
    const { data: listings, error } = await supabase
-     .from('listings')
-     .select('*, listing_images(image_url)')
+     .from('apartments')
+     .select('*, apartment_images(image_url)')
      .eq('landlord_id', user?.id);
 
    if (error) {

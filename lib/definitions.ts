@@ -1,17 +1,12 @@
-
 //    BASE TYPES
-
-
 export type UUID = string;
 export type Timestamp = string;
-
 
 //    PROFILES
 
 export type UserRole = "student" | "landlord" | "admin";
 
 export type Profile = {
- 
   full_name: string | null;
   email: string;
   phone_number: number | null;
@@ -34,9 +29,7 @@ export type CreateProfile = {
 
 export type UpdateProfile = Partial<Omit<Profile, "id">>;
 
-
 //    LISTINGS
-
 
 export type Apartment = {
   id: UUID;
@@ -50,27 +43,32 @@ export type Apartment = {
   school: string;
   created_at: Timestamp;
 };
-
-
-
-export type UpdateListing = Partial<Omit<Apartment, "id" | "landlord_id" | "created_at">>;
-
-export interface ListingDetails {
-  id: string;
-  title: string;
-  description: string;
-  price_per_year: number;
+export interface ApartmentDetail extends Apartment {
   created_at: string;
-  // Add any other listing columns here...
-
-  // Embedded related data
-  listing_images: ListingImage[];
-  reviews: Review[];
+  apartment_images: { image_url: string }[];
+  reviews: {
+    rating: number;
+    comment: string;
+    student: {
+      full_name: string;
+      avatar_url: string;
+    };
+  }[];
 }
 
-export interface ListingImage {
-  url: string;
-}
+export type UpdateListing = Partial<
+  Omit<Apartment, "id" | "landlord_id" | "created_at">
+>;
+// list type with reviews
+export type ApartmentWithReviewCount = ApartmentWithImages & {
+  reviews_count: number;
+};
+export type ApartmentFilters = {
+  school?: string;
+  priceRange?: string;
+  location?: string;
+  houseType?: string;
+};
 
 export interface Reviews {
   rating: number;
@@ -78,7 +76,7 @@ export interface Reviews {
   student: {
     full_name: string;
     avatar_url?: string;
-  };
+  }[];
 }
 export type ApartmentWithImages = {
   id: string;
@@ -93,11 +91,10 @@ export type ApartmentWithImages = {
   updated_at: string;
   is_active: boolean;
 
-  listing_images: {
+  apartment_images: {
     image_url: string;
   }[];
 };
-
 
 //   BOOKINGS
 
@@ -139,6 +136,3 @@ export type CreateReview = {
   rating: number;
   comment?: string | null;
 };
-
-
-
