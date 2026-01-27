@@ -91,7 +91,7 @@ export async function register(
     case "admin":
       redirect("/admin");
     case "landlord":
-      redirect("/dashboard/rental-apartment");
+      redirect("/landlord/dashboard");
     default:
       redirect("/apartments");
   }
@@ -166,6 +166,8 @@ export type AddApartmentState = {
 
 
 import { createClient as createServiceClient } from "@supabase/supabase-js";
+import { console } from "inspector";
+// import { vi } from "zod/locales";
 
 export async function uploadImages(files: FormData) {
   // Use service role to bypass RLS
@@ -337,3 +339,66 @@ export async function updateApartment(
   // return { success: true, message: "Listing updated successfully" };
 }
 
+const bookingSchema = z.object({
+  apartment_id: z.string().uuid("Invalid UUID format"),
+  student_id: z.string().uuid("Invalid UUID format"),
+  visit_date: z.string().min(1, "Visit date is required"), // Fixed casing to lowercase 'v'
+  visit_time: z.string().min(1, "Visit time is required"),
+  landlord_id: z.string().uuid("Invalid UUID format"),
+  contact_info: z.string().min(1, "Contact info is required"), // match your 'required' attribute in HTML
+  status: z.enum(["pending", "confirmed", "cancelled"]).optional(),
+});
+
+export type BookingState = {
+  error?: string;
+  fieldErrors?: string[];
+} | undefined;
+export async function bookApartment(
+  prevState: BookingState,
+  formData: FormData
+) {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized user" };
+
+  const apartmentId = formData.get("apartment_id") as string;
+
+  const { data: apartment, error: apartmentError } = await supabase
+    .from("apartments")
+    .select("landlord_id")
+    .eq("id", apartmentId)
+    .single();
+
+  if (apartmentError || !apartment) {
+    return { error: "Apartment not found" };
+  }
+
+  if (apartment.landlord_id === user.id) {
+    return { error: "You cannot book your own apartment" };
+  }
+
+const bookingData = {
+  apartment_id: apartmentId,
+  student_id: user.id,
+  landlord_id: apartment.landlord_id,
+  visit_date: formData.get("visit_date") as string,   // matches schema
+  visit_time: formData.get("visit_time") as string,   // matches schema
+  contact_info: formData.get("contact_info") as string, // matches schema
+  status: "pending",
+};
+
+  const parseResult = bookingSchema.safeParse(bookingData);
+  if (!parseResult.success) {
+    console.error("Booking validation error:", parseResult.error);
+    return {
+      error: "Form validation failed",
+      fieldErrors: z.treeifyError(parseResult.error).errors,
+    };
+  }
+
+  const { error } = await supabase.from("bookings").insert(bookingData);
+  if (error) return { error: error.message };
+
+  redirect("/my-bookings");
+}

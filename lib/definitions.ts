@@ -56,9 +56,6 @@ export interface ApartmentDetail extends Apartment {
   }[];
 }
 
-export type UpdateListing = Partial<
-  Omit<Apartment, "id" | "landlord_id" | "created_at">
->;
 // list type with reviews
 export type ApartmentWithReviewCount = ApartmentWithImages & {
   reviews_count: number;
@@ -102,18 +99,31 @@ export type BookingStatus = "pending" | "confirmed" | "cancelled";
 
 export type Booking = {
   id: UUID;
-  listing_id: UUID;
+  apartment_id: UUID;
   student_id: UUID;
+  landlord_id: UUID;
   visit_date: Timestamp;
+  visit_time: string;
+  contact_info: string;
   status: BookingStatus;
   created_at: Timestamp;
 };
 
-export type CreateBooking = {
-  listing_id: UUID;
-  student_id: UUID;
-  visit_date: Timestamp;
+export type BookingsDisplayType = Booking & {
+  // Add 'null' safety
+  // Wrap in brackets or ensure 'Booking' is defined
+  apartments: {
+    id: UUID;
+    title: string;
+    address: string;
+    price_per_year: number;
+    school: string;
+    apartment_images: {
+      image_url: string;
+    }[];
+  } | null; 
 };
+
 
 export type UpdateBooking = {
   status: BookingStatus;
