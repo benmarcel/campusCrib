@@ -321,55 +321,6 @@ export async function getBookingById(
   return booking;
 }
 
-// cancel booking
-
-export async function cancelBooking(booking_id: string): Promise<boolean> {
-  const supabase = await createClient();
-
-  //  check user only student or admin can cancel booking
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user?.id)
-    .single();
-
-  if (profileError) {
-    console.error(profileError);
-    return false;
-  }
-
-  if (profile.role !== "student" || profile.role !== "admin") {
-    console.error("Only students and admins can cancel bookings");
-    return false;
-  }
-  //  check if booking exists
-  const { error: fetchError } = await supabase
-    .from("bookings")
-    .select("*")
-    .eq("id", booking_id)
-    .single();
-
-  if (fetchError) {
-    console.error(fetchError);
-    return false;
-  }
-
-  const { error } = await supabase
-    .from("bookings")
-    .update({ status: "cancelled" })
-    .eq("id", booking_id);
-
-  if (error) {
-    console.error(error);
-    return false;
-  }
-
-  return true;
-}
-
 //  display bookings
 
 export async function displayAllStudentbookings(): Promise<BookingsDisplayType[]> {

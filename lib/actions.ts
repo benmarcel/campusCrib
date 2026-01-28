@@ -402,3 +402,41 @@ const bookingData = {
 
   redirect("/my-bookings");
 }
+
+
+// cancel booking
+
+import { revalidatePath } from "next/cache";
+
+export async function cancelBooking(booking_id: string): Promise<boolean> {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user?.id)
+    .single();
+
+  if (profileError || !profile) return false;
+
+  
+  if (profile.role !== "student" && profile.role !== "admin") {
+    console.error("Unauthorized");
+    return false;
+  }
+
+  const { error } = await supabase
+    .from("bookings")
+    .update({ status: "cancelled" })
+    .eq("id", booking_id);
+
+  if (error) {
+    console.error(error);
+    return false;
+  }
+
+  // This is the line that "refreshes" the data
+  revalidatePath("/my-bookings"); 
+  return true;
+}
