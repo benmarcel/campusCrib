@@ -408,7 +408,7 @@ const bookingData = {
 
 import { revalidatePath } from "next/cache";
 
-export async function cancelBooking(booking_id: string): Promise<boolean> {
+export async function cancelBooking(booking_id: string){
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -418,12 +418,12 @@ export async function cancelBooking(booking_id: string): Promise<boolean> {
     .eq("id", user?.id)
     .single();
 
-  if (profileError || !profile) return false;
+  if (profileError || !profile) return;
 
   
   if (profile.role !== "student" && profile.role !== "admin") {
     console.error("Unauthorized");
-    return false;
+    return;
   }
 
   const { error } = await supabase
@@ -433,10 +433,47 @@ export async function cancelBooking(booking_id: string): Promise<boolean> {
 
   if (error) {
     console.error(error);
-    return false;
+    return;
   }
 
   // This is the line that "refreshes" the data
   revalidatePath("/my-bookings"); 
-  return true;
+  redirect("/my-bookings");
+}
+
+// edit booking 
+export async function editBooking(
+  prevState: BookingState,
+  formData: FormData
+) {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized user" };
+
+  const bookingData = {
+    visit_date: formData.get("visit_date") as string,
+    visit_time: formData.get("visit_time") as string,
+    contact_info: formData.get("contact_info") as string,
+  };
+  const booking_id = formData.get("booking_id") as string;
+  const parseResult = bookingSchema.partial().safeParse(bookingData);
+  if (!parseResult.success) {
+    return {
+      error: "Form validation failed",
+      fieldErrors: z.treeifyError(parseResult.error).errors,
+    };
+  }
+
+  const { error } = await supabase
+    .from("bookings")
+    .update(bookingData)
+    .eq("id", booking_id)
+    .eq("student_id", user.id ); // Ensure student owns the booking
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  redirect("/my-bookings");
 }
