@@ -109,6 +109,9 @@ export type Booking = {
   created_at: Timestamp;
 };
 
+export type BookingsWithApartment = Booking & {
+  apartments: Apartment;
+};
 export type BookingsDisplayType = Booking & {
   // Add 'null' safety
   // Wrap in brackets or ensure 'Booking' is defined

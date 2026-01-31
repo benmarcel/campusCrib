@@ -43,7 +43,7 @@ export async function authenticate(
     case "admin":
       redirect("/admin");
     case "landlord":
-      redirect("/landlord/dashboard");
+      redirect("/landlords/dashboard");
     case "student":
     default:
       redirect("/apartments");
@@ -91,7 +91,7 @@ export async function register(
     case "admin":
       redirect("/admin");
     case "landlord":
-      redirect("/landlord/dashboard");
+      redirect("/landlords/dashboard");
     default:
       redirect("/apartments");
   }
@@ -151,7 +151,6 @@ const apartmentSchema = z.object({
   price_per_year: z.number().min(0, "Price must be non-negative"),
   address: z.string().min(1, "Address is required"),
   school: z.string(),
-  status: z.enum(["active", "inactive"]).optional(),
 });
 
 // state
@@ -222,7 +221,6 @@ export async function addApartment(
     price_per_year: Number(formData.get("price_per_year")),
     address: formData.get("address") as string,
     school: formData.get("school") as string | null,
-    status: 'active',
   };
 
   const parseResult = apartmentSchema.safeParse(apartmentData);
@@ -241,8 +239,8 @@ export async function addApartment(
 
   console.log("Attempting to insert:", dataToInsert);
 
-  // Insert new listing
-  const { data: listing, error } = await supabase
+  // Insert new apartment
+  const { data: apartment, error } = await supabase
     .from("apartments")
     .insert([dataToInsert])
     .select()
@@ -258,11 +256,11 @@ export async function addApartment(
     return { error: `${error.message} (${error.code})` };
   }
 
-  console.log("Listing created:", listing);
+  console.log("Listing created:", apartment);
 
-  // Insert listing images
+  // Insert apartment images
   const imageRows = imageUrls.map(url => ({
-    listing_id: listing.id,
+    apartment_id: apartment.id,
     image_url: url,
   }));
 
@@ -283,7 +281,7 @@ export async function addApartment(
   }
 
  
-  redirect("/landlord/dashboard");
+  redirect("/landlords/dashboard");
   // return { success: true, message: "Listing added successfully" };
 }
 
@@ -335,9 +333,49 @@ export async function updateApartment(
     return { error: error.message };
   }
   
-  redirect("/landlords/dashboard");
-  // return { success: true, message: "Listing updated successfully" };
+  // This updates the UI without a full browser redirect
+  revalidatePath("/landlords/dashboard");
+  return { success: true, message: "Listing updated successfully" };
 }
+
+// toggle apartment status
+export async function toggleApartmentStatus(
+  apartmentId: string,
+) {
+  console.log("Action triggered for ID:", apartmentId);
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized user" };
+
+  // Ownership check
+  const { data: existingApartment } = await supabase
+    .from("apartments")
+    .select("landlord_id, is_active")
+    .eq("id", apartmentId)
+    .single();
+
+  if (!existingApartment || existingApartment.landlord_id !== user.id) {
+    console.log("Not authorized to update this apartment");
+    return { error: "Not authorized to update this apartment" };
+  }
+
+  const { error } = await supabase
+    .from("apartments")
+    .update({ is_active: !existingApartment.is_active })
+    .eq("id", apartmentId);
+
+  if (error) {
+    return { error: error.message };
+  }
+  console.log("Apartment status toggled");
+
+  // This updates the UI without a full browser redirect
+  revalidatePath("/landlords/dashboard");
+  
+}
+
+
 
 const bookingSchema = z.object({
   apartment_id: z.string().uuid("Invalid UUID format"),
@@ -353,6 +391,8 @@ export type BookingState = {
   error?: string;
   fieldErrors?: string[];
 } | undefined;
+
+
 export async function bookApartment(
   prevState: BookingState,
   formData: FormData
@@ -407,6 +447,7 @@ const bookingData = {
 // cancel booking
 
 import { revalidatePath } from "next/cache";
+
 
 export async function cancelBooking(booking_id: string){
   const supabase = await createClient();

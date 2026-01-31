@@ -221,13 +221,13 @@ export async function getApartmentsByLandlordId(): Promise<
   return listings;
 }
 
-// get listing near by school and addrees
-export async function getListingsBySchoolAndAddress(
+// get apartments near by school and address
+export async function getApartmentsBySchoolAndAddress(
   school: string,
   address: string,
 ): Promise<Apartment[]> {
   const supabase = await createClient();
-  let query = supabase.from("listings").select("*");
+  let query = supabase.from("apartments").select("*");
 
   if (school) {
     query = query.ilike("school", `%${school}%`);
@@ -291,7 +291,7 @@ export async function getBookingsByLandlordId(): Promise<Booking[]> {
 
   const { data: bookings, error } = await supabase
     .from("bookings")
-    .select("*")
+    .select(`* , apartments ( title, address )`)
     .eq("landlord_id", user?.id);
 
   if (error) {
