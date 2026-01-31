@@ -110,7 +110,11 @@ export type Booking = {
 };
 
 export type BookingsWithApartment = Booking & {
-  apartments: Apartment;
+  apartments: {
+    title: string;
+    address: string;
+ 
+  };
 };
 export type BookingsDisplayType = Booking & {
   // Add 'null' safety

@@ -518,3 +518,38 @@ export async function editBooking(
 
   redirect("/my-bookings");
 }
+
+// confirm bookings (landlord)
+
+export async function confirmBooking(booking_id: string){
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user?.id)
+    .single();
+
+  if (profileError || !profile) return;
+
+  
+  if (profile.role !== "landlord" && profile.role !== "admin") {
+    // console.error("Unauthorized");
+    return;
+  }
+
+  const { error } = await supabase
+    .from("bookings")
+    .update({ status: "confirmed" })
+    .eq("id", booking_id);
+
+  if (error) {
+    // console.error(error);
+    return;
+  }
+
+  // This is the line that "refreshes" the data
+  revalidatePath("/landlords/dashboard/"); 
+  // redirect("/landlords/dashboard/my-bookings");
+}

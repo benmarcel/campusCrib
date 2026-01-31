@@ -6,6 +6,7 @@ import type {
   ApartmentFilters,
   Booking,
   BookingsDisplayType,
+  BookingsWithApartment,
 } from "./definitions";
 import { createClient } from "./supabase/server";
 import { redirect } from "next/navigation";
@@ -283,7 +284,7 @@ export async function getBookingsByStudentId(): Promise<Booking[]> {
 }
 
 // get bookings by landlord id
-export async function getBookingsByLandlordId(): Promise<Booking[]> {
+export async function getBookingsByLandlordId(): Promise<BookingsWithApartment[]> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -292,7 +293,8 @@ export async function getBookingsByLandlordId(): Promise<Booking[]> {
   const { data: bookings, error } = await supabase
     .from("bookings")
     .select(`* , apartments ( title, address )`)
-    .eq("landlord_id", user?.id);
+    .eq("landlord_id", user?.id)
+    .neq("status", "cancelled");
 
   if (error) {
     console.error(error);
