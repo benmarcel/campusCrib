@@ -16,7 +16,8 @@ export type Profile = {
   address: string | null;
 };
 
-export type CreateProfile = {
+
+export type User = {
   id: UUID;
   full_name?: string | null;
   phone_number?: number | null;

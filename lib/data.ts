@@ -7,6 +7,7 @@ import type {
   Booking,
   BookingsDisplayType,
   BookingsWithApartment,
+  User,
 } from "./definitions";
 import { createClient } from "./supabase/server";
 import { redirect } from "next/navigation";
@@ -61,9 +62,87 @@ export const getUserProfile = cache(async (userId: string) => {
 
   return data;
 });
-//
 
-// get all listings
+// admin get  all users
+export async function getAllUsersForVerification(): Promise<User[]> {
+  const supabase = await createClient();
+   
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/auth/login");
+  }
+  // check if user is an admin
+  const {data: profile} = await supabase 
+  .from("profiles")
+  .select("role")
+  .eq("id", user.id)
+
+ const role =profile ? profile[0].role : null
+
+ if (role !== "admin"){
+  return []
+ }
+
+  const { data: users, error } = await supabase
+    .from("profiles")
+    .select("id, full_name, phone_number, avatar_url, role, school, address, is_verified")
+    .neq("role", "admin"); // exclude admin users
+
+  if (error) {
+    console.error("Error fetching users:", error);
+    return [];
+  }
+
+  return users as User[];
+}
+
+// get all apartments for verification 
+
+export async function getAllApartmentsForVerification(): Promise<Apartment[]>{
+   
+const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/auth/login");
+  }
+  // check if user is an admin
+  const {data: profile, error: adminError} = await supabase 
+  .from("profiles")
+  .select("role")
+  .eq("id", user.id)
+
+ const role =profile ? profile[0].role : null
+// check if error  occured
+if(adminError){
+  console.error(adminError)
+}
+// checkif user is an admin
+ if (role !== "admin"){
+  return []
+ }
+
+//  get all apartments for verification
+
+const {data:apartments, error} = await supabase 
+.from("apartments")
+.select("*")
+
+if (error){
+  return []
+}
+
+return apartments 
+
+}
+
+// get all apartments for display
 export async function getAllApartments(
   filters?: ApartmentFilters,
 ): Promise<ApartmentWithReviewCount[]> {

@@ -553,3 +553,67 @@ export async function confirmBooking(booking_id: string){
   revalidatePath("/landlords/dashboard/"); 
   // redirect("/landlords/dashboard/my-bookings");
 }
+
+// admin actions
+
+export async function verifyUsers(user_id:string){
+  const supabase = await createClient();
+
+  // check if user exists
+  const { data: user, error: userError } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user_id)
+    .single();
+
+  if (userError || !user) {
+    console.error("User not found:", userError);
+    return;
+  }
+
+  // Verify user logic here
+  const {data: verifiedUser, error: verificationError} = await supabase
+  .from("profiles")
+  .update({is_verified: true})
+  .eq("id", user_id);
+
+  if (verificationError) {
+    console.error("Error verifying user:", verificationError);
+    return;
+  }
+
+  // console.log("User verified successfully:", verifiedUser);
+  revalidatePath("/admin/dashboard")
+}
+
+// apartment 
+
+export async function verifyApartments(apartment_id:string){
+  const supabase = await createClient()
+
+  // check if apartment exists
+  const { data: apartment, error: apartmentError } = await supabase
+    .from("apartments")
+    .select("*")
+    .eq("id", apartment_id)
+    .single();
+
+  if (apartmentError || !apartment) {
+    console.error("Apartment not found:", apartmentError);
+    return;
+  }
+
+  // Verify apartment logic here
+  const { data: verifiedApartment, error: verificationError } = await supabase
+    .from("apartments")
+    .update({ is_verified: true })
+    .eq("id", apartment_id);
+
+  if (verificationError) {
+    console.error("Error verifying apartment:", verificationError);
+    return;
+  }
+
+  // console.log("Apartment verified successfully:", verifiedApartment);
+  revalidatePath("/admin/dashboard");
+}
