@@ -65,8 +65,8 @@ export async function register(
         full_name: formData.get("full_name"),
         phone_number: formData.get("phone_number"),
         role: formData.get("role") || "student",
-        school: formData.get("school"),
-        address: formData.get("address"),
+        school: formData.get("school") || "",
+        address: formData.get("address") || "",
       },
     },
   });
@@ -89,7 +89,7 @@ export async function register(
   // Redirect based on role
   switch (profile.role) {
     case "admin":
-      redirect("/admin");
+      redirect("/admin/dashboard");
     case "landlord":
       redirect("/landlords/dashboard");
     default:
@@ -616,4 +616,31 @@ export async function verifyApartments(apartment_id:string){
 
   // console.log("Apartment verified successfully:", verifiedApartment);
   revalidatePath("/admin/dashboard");
+}
+
+export async function submitReview(formData: FormData) {
+  const supabase = await createClient();
+
+  // Extract data from form
+  const apartmentId = formData.get("apartmentId") as string;
+  const rating = Number(formData.get("rating"));
+  const comment = formData.get("comment") as string;
+
+  // Get the logged-in user
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "You must be logged in to leave a review." };
+
+  // Insert into reviews table
+  const { error } = await supabase.from("reviews").insert({
+    apartment_id: apartmentId,
+    user_id: user.id,
+    rating,
+    comment,
+  });
+
+  if (error) return { error: "Failed to submit review." };
+
+  // 4. Refresh the apartment page to show the new review
+  revalidatePath(`/apartments/${apartmentId}`);
+  return { success: true };
 }

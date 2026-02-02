@@ -80,6 +80,7 @@ export async function getAllUsersForVerification(): Promise<User[]> {
   .from("profiles")
   .select("role")
   .eq("id", user.id)
+  
 
  const role =profile ? profile[0].role : null
 
@@ -90,7 +91,8 @@ export async function getAllUsersForVerification(): Promise<User[]> {
   const { data: users, error } = await supabase
     .from("profiles")
     .select("id, full_name, phone_number, avatar_url, role, school, address, is_verified")
-    .neq("role", "admin"); // exclude admin users
+    .neq("role", "admin") // exclude admin users
+    .eq("is_verified", false)
 
   if (error) {
     console.error("Error fetching users:", error);
@@ -133,6 +135,7 @@ if(adminError){
 const {data:apartments, error} = await supabase 
 .from("apartments")
 .select("*")
+.eq("is_verified", false)
 
 if (error){
   return []
