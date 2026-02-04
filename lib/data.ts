@@ -8,6 +8,8 @@ import type {
   BookingsDisplayType,
   BookingsWithApartment,
   User,
+  ApartmentDetail,
+  SavedApartments
 } from "./definitions";
 import { createClient } from "./supabase/server";
 import { redirect } from "next/navigation";
@@ -238,7 +240,9 @@ export async function getApartmentById(listing_id: string): Promise<Apartment> {
 }
 
 // for listing details page
-export async function getApartmentDetailsById(apartment_id: string) {
+export async function getApartmentDetailsById(apartment_id: string):Promise<
+  ApartmentDetail 
+> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("apartments")
@@ -269,6 +273,7 @@ export async function getApartmentDetailsById(apartment_id: string) {
     console.error(error);
     return { error: error.message || "Listing not found" };
   }
+  console.log("Apartment Details:", data);
   return data;
 }
 
@@ -472,4 +477,26 @@ export async function displayAllStudentbookings(): Promise<BookingsDisplayType[]
     }
 
     return bookings as BookingsDisplayType[];
+}
+
+// get all saved apartments by student id
+export async function getSavedApartmentsByStudentId(): Promise<
+ SavedApartments[]
+> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: savedApartments, error } = await supabase
+    .from("saved_apartments")
+    .select(`*, apartments ( *, apartment_images ( image_url ) )`)
+    .eq("student_id", user?.id);
+
+  if (error) {
+    console.error(error);
+    return [];
+  }
+console.log("Saved Apartments:", savedApartments);  
+  return savedApartments || [];
 }

@@ -572,7 +572,7 @@ export async function verifyUsers(user_id:string){
   }
 
   // Verify user logic here
-  const {data: verifiedUser, error: verificationError} = await supabase
+  const {error: verificationError} = await supabase
   .from("profiles")
   .update({is_verified: true})
   .eq("id", user_id);
@@ -618,29 +618,95 @@ export async function verifyApartments(apartment_id:string){
   revalidatePath("/admin/dashboard");
 }
 
-export async function submitReview(formData: FormData) {
-  const supabase = await createClient();
+  export async function submitReview(formData: FormData) {
+    const supabase = await createClient();
 
-  // Extract data from form
-  const apartmentId = formData.get("apartmentId") as string;
-  const rating = Number(formData.get("rating"));
-  const comment = formData.get("comment") as string;
+    // Extract data from form
+    const apartmentId = formData.get("apartmentId") as string;
+    const rating = Number(formData.get("rating"));
+    const comment = formData.get("comment") as string;
 
-  // Get the logged-in user
-  const { data: { user } } = await supabase.auth.getUser();
+    // Get the logged-in user
+    const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "You must be logged in to leave a review." };
 
   // Insert into reviews table
   const { error } = await supabase.from("reviews").insert({
     apartment_id: apartmentId,
-    user_id: user.id,
+    student_id: user.id,
     rating,
     comment,
   });
 
-  if (error) return { error: "Failed to submit review." };
+  if (error) {
+    console.error("Error submitting review:", error.message);
+    return { error: error.message };
+
+  }
+    
+
+  console.log("Review submitted successfully");
 
   // 4. Refresh the apartment page to show the new review
   revalidatePath(`/apartments/${apartmentId}`);
-  return { success: true };
+  return { success: true }; 
+}
+
+export async function saveApartment(apartmentId: string) {
+  const supabase = await createClient();
+
+  // Get the logged-in user
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "You must be logged in to save an apartment." };
+  
+  // check that the user is a student
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (profileError || !profile) {
+    console.error("Unable to load user profile:", profileError?.message);
+    return { error: "Unable to load user profile." };
+  }
+
+  if (profile.role !== "student") {
+    return { error: "Only students can save apartments." };
+  }
+
+  // Check if already saved
+  const { data: existing, error: existingError } = await supabase
+    .from("saved_apartments")
+    .select("*")
+    .eq("apartment_id", apartmentId)
+    .eq("student_id", user.id)
+    .single();
+
+  if (existingError && existingError.code !== 'PGRST116') {
+    console.error("Error checking saved apartments:", existingError.message);
+    return { error: existingError.message };
+  }
+
+  if (existing) {
+    return { message: "Apartment already saved." };
+  }
+
+  // Insert into saved_apartments table
+  const { error } = await supabase.from("saved_apartments").insert({
+    apartment_id: apartmentId,
+    student_id: user.id,
+  });
+
+  if (error) {
+    console.error("Error saving apartment:", error.message);
+    return { error: error.message };
+  }
+
+  console.log("Apartment saved successfully");
+
+  // redirect to saved apartments page
+  revalidatePath(`/saved-apartments`);
+  redirect(`/saved-apartments`);
+ 
 }

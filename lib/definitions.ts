@@ -68,14 +68,7 @@ export type ApartmentFilters = {
   houseType?: string;
 };
 
-export interface Reviews {
-  rating: number;
-  comment: string;
-  student: {
-    full_name: string;
-    avatar_url?: string;
-  }[];
-}
+
 export type ApartmentWithImages = {
   id: string;
   landlord_id: string;
@@ -93,6 +86,17 @@ export type ApartmentWithImages = {
     image_url: string;
   }[];
 };
+
+//  SAVED APARTMENTS
+export type SavedApartments = {
+  id: string; // The ID of the "save" entry
+  apartment_id: string;
+  student_id: string;
+  created_at: string;
+  apartments: ApartmentWithImages; 
+}
+
+
 
 //   BOOKINGS
 
