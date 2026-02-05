@@ -108,7 +108,7 @@ npm run dev or bun run dev
 * [X] **Search & Filter:** Find houses based on location, price, house type, school.
 * [X] **Authentication:** Secure sign-up/login for students and landlords (supabase).
 * [X] **Responsive Design:** Fully optimized for mobile (crucial for students on the go).
-* [ ] **Theme Switching:** Support for system, light, and dark modes.
+
 
 ---
 
