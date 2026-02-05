@@ -152,9 +152,3 @@ export type Review = {
   created_at: Timestamp;
 };
 
-export type CreateReview = {
-  listing_id: UUID;
-  student_id: UUID;
-  rating: number;
-  comment?: string | null;
-};

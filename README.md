@@ -1,109 +1,154 @@
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
+# Project Documentation: Campus Crib
 
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
+## 1. Project Overview
 
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
+**Campus Crib** is a full-stack web application designed to help students find and book affordable housing close to their university campuses. It bridges the gap between local landlords and the student community.
 
-## Features
+* **Target Audience:** University Students & Property Managers.
+* **Key Value Prop:** Verified listings, proximity-based search, and seamless booking.
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Proxy
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Password-based authentication block installed via the [Supabase UI Library](https://supabase.com/ui/docs/nextjs/password-based-auth)
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Components with [shadcn/ui](https://ui.shadcn.com/)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
+That is a much more powerful and personal foundation. Using **Bethel** as a user persona makes the documentation feel human and focused.
 
-## Demo
+Here is the updated **Problem & Solution** section for your README, refined to match your specific narrative:
 
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
+---
 
-## Deploy to Vercel
+## Problem Statement: The "Bethel" Scenario
 
-Vercel deployment will guide you through creating a Supabase account and project.
+Bethel, a university student, is struggling to find a safe place to live. Like thousands of others, she is trapped between two bad options:
 
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
+* **Exploitative Middlemen:** Local agents charging exorbitant "viewing fees" and commissions that eat into her tuition budget.
+* **The "Social Media Trap":** Fraudulent listings on platforms like Facebook and WhatsApp that lead to financial loss or unsafe living conditions.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
+Bethel needs more than just a list of houses; she needs a **reliable, verified ecosystem.**
 
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
+## The Solution: Campus Crib
 
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
+**Campus Crib** is a specialized platform (Web) designed to eliminate the risk and stress of off-campus housing. We move the process from shady group chats into a secure, transparent marketplace.
 
-## Clone and run locally
+### Core Solutions
 
-1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
+* **Verification Engine:** Every listing is vetted to ensure it actually exists, ending the era of fraudulent social media scams.
+* **Cost Transparency:** By connecting students directly to verified listings, we reduce the reliance on exploitative "agent fees."
+* **Trust Through Community:** Integrated **Student Reviews** allow Bethel to see what life is actually like in a building before she pays a dime.
+* **Commitment Without Risk:** Features like **Saving Listings** (apartment) for later and **Onsite Visit Scheduling** ensure students can perform due diligence without pressure.
 
-2. Create a Next.js app using the Supabase Starter template npx command
+### Key Technical Features
 
-   ```bash
-   npx create-next-app --example with-supabase with-supabase-app
-   ```
+* **Advanced Filtering:** Filter by price, proximity to specific campus gates(location), House type base on student preference, and school(university or other higher institutions).
+* **Safe-List Bookmarking:** A "Save for Later" feature to compare options side-by-side.
+* **Visit Coordinator:** A built-in system to schedule physical tours of the property.
+* **Review System:** A peer-to-peer rating system specifically for student tenants.
 
-   ```bash
-   yarn create next-app --example with-supabase with-supabase-app
-   ```
+---
 
-   ```bash
-   pnpm create next-app --example with-supabase with-supabase-app
-   ```
+## 2. Tech Stack
 
-3. Use `cd` to change into the app's directory
+* **Framework:** Next.js 16 (App Router)
+* **Styling:** Tailwind CSS
+* **State/Data:**  Supabase
+* **Fonts:** Geist (Google Fonts)
 
-   ```bash
-   cd with-supabase-app
-   ```
+---
 
-4. Rename `.env.example` to `.env.local` and update the following:
+## 3. Architecture & Layout
 
-  ```env
-  NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=[INSERT SUPABASE PROJECT API PUBLISHABLE OR ANON KEY]
-  ```
-  > [!NOTE]
-  > This example uses `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, which refers to Supabase's new **publishable** key format.
-  > Both legacy **anon** keys and new **publishable** keys can be used with this variable name during the transition period. Supabase's dashboard may show `NEXT_PUBLIC_SUPABASE_ANON_KEY`; its value can be used in this example.
-  > See the [full announcement](https://github.com/orgs/supabase/discussions/29260) for more information.
+The project uses **Next.js Route Groups** to handle different UI requirements:
 
-  Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` can be found in [your Supabase project's API settings](https://supabase.com/dashboard/project/_?showConnect=true)
+* **`(root)`**: Contains the primary user experience including the `Navbar`.
+* **`(auth)`**: Handles login and registration with a clean, focused layout (no Navbar).
+* **`ui/`**: Reusable atomic components and sections.
 
-5. You can now run the Next.js local development server:
+---
 
-   ```bash
-   npm run dev
-   ```
+## 4. Getting Started
 
-   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
+### Prerequisites
 
-6. This template comes with the default shadcn/ui style initialized. If you instead want other ui.shadcn styles, delete `components.json` and [re-install shadcn/ui](https://ui.shadcn.com/docs/installation/next)
+* Node.js 18.x or higher
+* npm / pnpm / yarn / bun
 
-> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
+### Installation
 
-## Feedback and issues
+1. **Clone the repository:**
+```bash
+git clone https://github.com/benmarcel/campusCrib.git
 
-Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
+```
 
-## More Supabase examples
 
-- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
-- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
-- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
+2. **Install dependencies:**
+```bash
+npm install or bun install
+
+```
+
+
+3. **Set up Environment Variables:**
+Create a `.env` file in the root directory:
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_url
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_key
+
+```
+
+
+4. **Run the development server:**
+```bash
+npm run dev or bun run dev
+
+```
+
+
+
+---
+
+## 5. Features
+
+* [X] **Search & Filter:** Find houses based on location, price, house type, school.
+* [X] **Authentication:** Secure sign-up/login for students and landlords (supabase).
+* [X] **Responsive Design:** Fully optimized for mobile (crucial for students on the go).
+* [ ] **Theme Switching:** Support for system, light, and dark modes.
+
+---
+
+## 6. Folder Structure
+
+```text
+├── app/
+│   ├── (auth)/          # Authentication routes (Login/Signup)
+│   ├── (root)/          # Core app routes (Students, admin, landlords, profile)
+│   ├── globals.css      # Global styles
+│   ├── page.tsx         # Home page
+│   └── layout.tsx       # Root configuration (Providers)
+│  
+├── lib/                 # supabase(config), actions, data, definitions(types), utils
+├── ui/
+│   ├── components/      # Shared components (Navbar, Footer, etc..)
+│   ├── Landlords/       # Landlord route related component
+│   ├── student/         # Student route related component
+│   ├── admin/           # admin route related component
+│   └── skeletons/       # Non-blocking ui componets (components that shows while user data is still fetched) 
+└── public/              # Static assets (Images, Icons)
+
+```
+
+---
+
+## 7. Roadmap
+
+* [x] Initial Project Setup
+* [x] Route Grouping for Auth/Root
+* [X] Integration with Database
+* [ ] Map View for Property Locations
+* [ ] Payment Gateway Integration
+
+---
+
+## 8. Contributing
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request

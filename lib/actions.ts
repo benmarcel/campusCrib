@@ -604,7 +604,7 @@ export async function verifyApartments(apartment_id:string){
   }
 
   // Verify apartment logic here
-  const { data: verifiedApartment, error: verificationError } = await supabase
+  const { error: verificationError } = await supabase
     .from("apartments")
     .update({ is_verified: true })
     .eq("id", apartment_id);
