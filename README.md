@@ -72,7 +72,7 @@ The project uses **Next.js Route Groups** to handle different UI requirements:
 
 1. **Clone the repository:**
 ```bash
-git clone https://github.com/benmarcel/campusCrib.git
+git clone   
 
 ```
 

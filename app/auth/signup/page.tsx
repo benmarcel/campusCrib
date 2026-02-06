@@ -1,4 +1,4 @@
-import RegisterForm from "@/app/ui/components/SignupForm";
+import RegisterForm from "../../ui/components/SignupForm";
 import Link from "next/link";
 import { Suspense } from "react";
 export default function SignupPage() {
