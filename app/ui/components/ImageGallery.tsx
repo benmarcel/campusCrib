@@ -6,7 +6,7 @@ interface ApartmentImage {
 
 interface ImageGalleryProps {
   images: ApartmentImage[];
-  title: string;
+  title: string | undefined;
 }
 
 export default function ImageGallery({ images, title }: ImageGalleryProps) {
@@ -25,7 +25,7 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
       <div className="relative h-[200px] sm:h-[300px] md:h-[350px] overflow-hidden rounded-lg">
         <Image
           src={mainImage.image_url}
-          alt={title}
+          alt={title ? title : "Apartment Image"}
           fill
           className="object-cover"
           priority

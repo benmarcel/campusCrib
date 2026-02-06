@@ -52,7 +52,7 @@ export type ApartmentDetail = Partial<Apartment> & {
     student: { 
       full_name: string;
       avatar_url: string;
-    }[]; 
+    } 
   }[];
 };
 

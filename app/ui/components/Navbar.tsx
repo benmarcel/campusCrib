@@ -27,7 +27,9 @@ export default function Navbar() {
 
           {/* Desktop Navigation - Center */}
           <div className="hidden lg:flex flex-1 justify-center">
-            <NavLinks />
+            <Suspense fallback={<div className="w-48 h-8 bg-gray-50 animate-pulse rounded-lg" />}>
+              <NavLinks />
+            </Suspense>
           </div>
 
           {/* Desktop Auth Section - Right */}

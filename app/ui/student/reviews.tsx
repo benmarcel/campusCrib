@@ -3,12 +3,13 @@
 import { useTransition, useRef, useState } from "react";
 import { submitReview } from "@/lib/actions";
 import Alert from "../components/Alert";
-
-export default function ReviewForm({ apartmentId }: { apartmentId: string }) {
+import {use} from "react";
+export default function ReviewForm({ params }: { params: Promise<{ id: string }> }) {
   const [isPending, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
   const [error, setError] = useState<string | undefined>(undefined);
   const [success, setSuccess] = useState<string | null>(null);
+  const { id: apartmentId } = use(params);
   const handleSubmit = (formData: FormData) => {
     startTransition(async () => {
       const result = await submitReview(formData);

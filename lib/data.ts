@@ -244,7 +244,7 @@ export async function getApartmentDetailsById(apartment_id: string):Promise<
   ApartmentDetail
 > {
   const supabase = await createClient();
-  const { data: apartmentDetails, error } = await supabase
+  const { data, error } = await supabase
     .from("apartments")
     .select(
       `
@@ -267,14 +267,22 @@ export async function getApartmentDetailsById(apartment_id: string):Promise<
   `,
     )
     .eq("id", apartment_id)
-    .single();
+    .single() // Use single() to ensure we get exactly one record;
 
   if (error) {
     console.error(error);
    throw new Error("Failed to fetch apartment details");
   }
-  // console.log("Apartment Details:", data);
-  return apartmentDetails;
+  const apartmentDetails: ApartmentDetail = {
+  ...data,
+  reviews: (data.reviews || []).map((rev) => ({
+    ...rev,
+    // If student is an array, take the first one. If it's already an object, use it.
+    student: Array.isArray(rev.student) ? rev.student[0] : rev.student,
+  })),
+};
+
+return apartmentDetails;
 }
 
 // get user

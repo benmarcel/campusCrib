@@ -2,17 +2,15 @@
 import SearchBar from "@/app/ui/components/search";
 import ApartmentCard from "@/app/ui/components/ApartmentCard";
 import { getAllApartments } from "@/lib/data";
-import { Suspense } from "react";
-import { ApartmentFilters } from "@/lib/definitions";
+import { Suspense } from "react"; 
 import SearchBarSkeleton from "@/app/ui/skeletons/searchbar-skeleton";
-export default async function Page({
+
+export default function Page({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | undefined }>;
-}) {
-  // Await the search parameters from the URL
-  const filters = await searchParams;
-
+}) {  
+  
   return (
     <main className="py-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <section className="mb-12">
@@ -24,18 +22,26 @@ export default async function Page({
       </section>
 
       <div className="max-w-7xl mx-auto px-4">
-        
-        {/* Pass filters directly into your fetch function */}
-        <Suspense fallback={<p>Loading houses...</p>} key={JSON.stringify(filters)}>
-          <ApartmentList filters={filters} />
+        {/*  use a key on Suspense so that when filters change, 
+            the fallback (Loading...) shows up again.
+        */}
+        <Suspense fallback={<ApartmentGridSkeleton />} key="apartment-list">
+          <ApartmentList searchParams={searchParams} />
         </Suspense>
       </div>
     </main>
   );
 }
 
-//  Sub-component to handle the data fetching
-async function ApartmentList({ filters }: { filters: ApartmentFilters }) {
+// Sub-component to handle the data fetching
+async function ApartmentList({ 
+  searchParams 
+}: { 
+  searchParams: Promise<{ [key: string]: string | undefined }> 
+}) {
+  // Await the promise INSIDE the suspended component
+  const filters = await searchParams;
+
   const apartments = await getAllApartments({
     location: filters.location,
     school: filters.school,
@@ -44,17 +50,29 @@ async function ApartmentList({ filters }: { filters: ApartmentFilters }) {
   });
 
   if (apartments.length === 0) {
-    return <p className="text-slate-500">No apartments found matching your criteria.</p>;
+    return (
+      <div className="text-center py-10">
+        <p className="text-slate-500 text-lg">No apartments found matching your criteria.</p>
+      </div>
+    );
   }
 
   return (
-    <div>
-     
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {apartments.map((apt) => (
         <ApartmentCard key={apt.id} apartment={apt} />
       ))}
     </div>
-    </div>
   );
+}
+
+// A simple skeleton for the apartment grid while loading
+function ApartmentGridSkeleton() {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="h-80 bg-gray-100 animate-pulse rounded-xl" />
+        ))}
+      </div>
+    );
 }

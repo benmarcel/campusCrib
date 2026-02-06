@@ -2,12 +2,13 @@
 import { bookApartment } from "@/lib/actions";
 import { useActionState } from "react";
 import Alert from "../components/Alert";
-
-export default function Bookingform({ apartmentId }: { apartmentId: string }) {
+import {use} from "react";
+export default function Bookingform({ params }: { params: Promise<{ id: string }> }) {
   const [state, formAction, isPending] = useActionState(
     bookApartment,
     undefined,
   );
+  const { id } = use(params);
 
   const inputStyle =
     "w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#001F3F] transition-all placeholder:text-gray-400 text-gray-700";
@@ -23,7 +24,7 @@ export default function Bookingform({ apartmentId }: { apartmentId: string }) {
       </h2>
       {state?.error && <Alert variant="error" message={state.error} />}
       {/* hidden input to get callback url */}
-      <input type="hidden" name="apartment_id" value={apartmentId} />
+      <input type="hidden" name="apartment_id" value={id} />
       <div className="space-y-4">
         {/* date Field */}
         <div className="flex flex-col">
