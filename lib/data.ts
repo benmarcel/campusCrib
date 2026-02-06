@@ -241,10 +241,10 @@ export async function getApartmentById(listing_id: string): Promise<Apartment> {
 
 // for listing details page
 export async function getApartmentDetailsById(apartment_id: string):Promise<
-  ApartmentDetail 
+  ApartmentDetail
 > {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data: apartmentDetails, error } = await supabase
     .from("apartments")
     .select(
       `
@@ -271,15 +271,15 @@ export async function getApartmentDetailsById(apartment_id: string):Promise<
 
   if (error) {
     console.error(error);
-    return { error: error.message || "Listing not found" };
+   throw new Error("Failed to fetch apartment details");
   }
-  console.log("Apartment Details:", data);
-  return data;
+  // console.log("Apartment Details:", data);
+  return apartmentDetails;
 }
 
 // get user
 
-export async function getLoggedinIser() {
+export async function getLoggedinUser() {
   const supabase = await createClient();
 
   const {

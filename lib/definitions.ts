@@ -44,18 +44,17 @@ export type Apartment = {
   school: string;
   created_at: Timestamp;
 };
-export interface ApartmentDetail extends Apartment {
-  created_at: string;
+export type ApartmentDetail = Partial<Apartment> & {
   apartment_images: { image_url: string }[];
   reviews: {
     rating: number;
     comment: string;
-    student: {
+    student: { 
       full_name: string;
       avatar_url: string;
-    };
+    }[]; 
   }[];
-}
+};
 
 // list type with reviews
 export type ApartmentWithReviewCount = ApartmentWithImages & {
