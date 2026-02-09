@@ -7,13 +7,8 @@
 * **Target Audience:** University Students & Property Managers.
 * **Key Value Prop:** Verified listings, proximity-based search, and seamless booking.
 
-That is a much more powerful and personal foundation. Using **Bethel** as a user persona makes the documentation feel human and focused.
 
-Here is the updated **Problem & Solution** section for your README, refined to match your specific narrative:
-
----
-
-## Problem Statement: The "Bethel" Scenario
+## Problem Statement:
 
 Bethel, a university student, is struggling to find a safe place to live. Like thousands of others, she is trapped between two bad options:
 
