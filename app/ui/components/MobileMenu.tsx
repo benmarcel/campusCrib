@@ -59,7 +59,7 @@ export default function MobileMenu() {
     };
   }, [isOpen]);
 
-  const isActive = (path: string) => pathname === path || pathname.startsWith(path);
+  const isActive = (label: string) => pathname === label || pathname.includes(label);
 
   const mainLinks = [
     { href: '/', label: 'Home', icon: Home },
@@ -204,7 +204,7 @@ export default function MobileMenu() {
                       flex items-center px-4 py-3
                       transition-colors
                       ${
-                        isActive(href)
+                        isActive(label)
                           ? 'text-[#003366] bg-[#003366]/10 border-l-4 border-[#003366]'
                           : 'text-gray-700 hover:bg-gray-50'
                       }

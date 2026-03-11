@@ -9,7 +9,6 @@ export default function SignupPage() {
         <Suspense fallback={<div className="text-gray-500 ">Loading...</div>}>
           <RegisterForm />
         </Suspense>
-        <RegisterForm />
         
         <p className="text-center mt-6 text-gray-600">
           Already have an account? <Link href="/auth/login" className="text-blue-900 font-bold">Login</Link>
