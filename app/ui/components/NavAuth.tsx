@@ -38,7 +38,7 @@ export default async function AuthSection() {
           Login
         </Link>
         <Link 
-          href="/auth/register" 
+          href="/auth/signup" 
           className="
             px-5 py-2 rounded-lg font-medium text-sm
             text-white bg-[#003366]
