@@ -41,7 +41,7 @@ export default function EditListingForm({
       )}
       <div className="space-y-5">
         <div className="flex flex-col">
-          <label className={labelStyle}>House Title</label>
+          <label className={labelStyle}>House Type</label>
           <select
             name="title"
             defaultValue={apartment.title}
@@ -52,7 +52,7 @@ export default function EditListingForm({
               Select House Type
             </option>
             <option value="Single room">Single room</option>
-            <option value="Self-contained">Self-contained</option>
+            <option value="Self-contained">Self-contain</option>
             <option value="2 bedroom">2 bedroom</option>
             <option value="3 bedroom">3 bedroom</option>
           </select>

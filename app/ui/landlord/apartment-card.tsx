@@ -3,6 +3,7 @@ import Image from "next/image";
 import { UpdateApartment } from "../components/links";
 import { MapPin, Banknote } from "lucide-react";
 import { StatusToggle } from "./toggle-apartment-status";
+import VerifyButton from "./VerifyButton";
 export default function ApartmentCard({
   apartment,
 }: {
@@ -16,7 +17,7 @@ export default function ApartmentCard({
           src={apartment.apartment_images[0]?.image_url}
           alt={apartment.title}
           fill
-          priority={true} 
+          priority={true}
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover transition-transform duration-500 group-hover:scale-100"
         />
@@ -69,17 +70,20 @@ export default function ApartmentCard({
         </div>
 
         {/* --- Footer Action --- */}
-        <div className="mt-8 pt-5 border-t border-slate-50 flex justify-between items-center">
+        <div className="mt-8 pt-5 border-t border-slate-50 flex flex-col justify-between ">
           <div className="flex flex-col">
             <span className="text-[10px] uppercase font-bold text-slate-300 tracking-widest">
               Apartment status
             </span>
-           {/* Replace the hardcoded text or ID with the Toggle */}
+            {/* Replace the hardcoded text or ID with the Toggle */}
             <StatusToggle id={apartment.id} isActive={apartment.is_active} />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between mt-4">
             <UpdateApartment id={apartment.id} />
+            {apartment.verification_status === "unsubmitted" && (
+              <VerifyButton apartmentId={apartment.id} />
+            )}
           </div>
         </div>
       </div>

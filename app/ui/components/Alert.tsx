@@ -28,8 +28,7 @@ export default function Alert({
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    if (!duration) return;
-
+    
     const timer = setTimeout(() => {
       setVisible(false);
     }, duration);
@@ -42,7 +41,7 @@ export default function Alert({
   return (
     <div
       className={cn(
-        "mb-6 p-4 rounded-xl border text-sm font-medium transition-opacity",
+        "mb-6 p-4 rounded-xl border text-sm font-medium transition-opacity text-center mt-2",
         variantStyles[variant],
         className
       )}

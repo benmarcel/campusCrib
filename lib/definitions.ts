@@ -44,6 +44,21 @@ export type Apartment = {
   school: string;
   created_at: Timestamp;
 };
+
+export type ApartmentForVerification = Apartment & {
+  
+  profiles: {
+    full_name: string | null;
+    phone_number: string | null;
+  } | null;
+
+  verification_payments: {
+    amount: number | null;
+    paystack_reference: string | null;
+    created_at: string;
+  }[];
+};
+
 export type ApartmentDetail = Partial<Apartment> & {
   apartment_images: { image_url: string }[];
   reviews: {
@@ -80,6 +95,7 @@ export type ApartmentWithImages = {
   created_at: string;
   updated_at: string;
   is_active: boolean;
+  verification_status:  'unsubmitted' | 'pending_review' | 'verified' | 'rejected';
 
   apartment_images: {
     image_url: string;

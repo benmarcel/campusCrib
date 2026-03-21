@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 
 export async function authenticate(
   prevState: string | undefined,
-  formData: FormData
+  formData: FormData,
 ) {
   const supabase = await createClient();
 
@@ -41,7 +41,7 @@ export async function authenticate(
   // Redirect based on role
   switch (profile.role) {
     case "admin":
-      redirect("/admin");
+      redirect("/admin/dashboard");
     case "landlord":
       redirect("/landlords/dashboard");
     case "student":
@@ -52,7 +52,7 @@ export async function authenticate(
 
 export async function register(
   prevState: string | undefined,
-  formData: FormData
+  formData: FormData,
 ) {
   const supabase = await createClient();
 
@@ -97,11 +97,13 @@ export async function register(
   }
 }
 
+
+
 // update profile
 
 export async function updateProfile(
   prevState: string | undefined,
-  formData: FormData
+  formData: FormData,
 ) {
   const supabase = await createClient();
 
@@ -132,7 +134,6 @@ export async function updateProfile(
   return "Profile updated successfully";
 }
 
-
 export async function logout() {
   const supabase = await createClient();
 
@@ -142,7 +143,6 @@ export async function logout() {
 }
 
 // add new listings
-
 
 // validation schema
 const apartmentSchema = z.object({
@@ -162,8 +162,6 @@ export type AddApartmentState = {
   fieldErrors?: string[];
 };
 
-
-
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { console } from "inspector";
 // import { vi } from "zod/locales";
@@ -172,15 +170,15 @@ export async function uploadImages(files: FormData) {
   // Use service role to bypass RLS
   const supabase = createServiceClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY! // Add this to .env.local
+    process.env.SUPABASE_SERVICE_ROLE_KEY!, // Add this to .env.local
   );
 
   const fileList = files.getAll("files") as File[];
-  
+
   const uploadPromises = fileList.map(async (file) => {
-    const fileExt = file.name.split('.').pop();
+    const fileExt = file.name.split(".").pop();
     const fileName = `${crypto.randomUUID()}.${fileExt}`;
-    
+
     const { error } = await supabase.storage
       .from("property-images")
       .upload(fileName, file);
@@ -200,7 +198,7 @@ export async function uploadImages(files: FormData) {
 export async function addApartment(
   prevState: AddApartmentState,
   formData: FormData,
-  imageUrls: string[]
+  imageUrls: string[],
 ): Promise<AddApartmentState> {
   const supabase = await createClient();
 
@@ -259,7 +257,7 @@ export async function addApartment(
   console.log("Listing created:", apartment);
 
   // Insert apartment images
-  const imageRows = imageUrls.map(url => ({
+  const imageRows = imageUrls.map((url) => ({
     apartment_id: apartment.id,
     image_url: url,
   }));
@@ -267,7 +265,7 @@ export async function addApartment(
   console.log("Attempting to insert images:", imageRows);
 
   const { error: imageError } = await supabase
-    .from('apartment_images')
+    .from("apartment_images")
     .insert(imageRows);
 
   if (imageError) {
@@ -280,7 +278,6 @@ export async function addApartment(
     return { error: `${imageError.message} (${imageError.code})` };
   }
 
- 
   redirect("/landlords/dashboard");
   // return { success: true, message: "Listing added successfully" };
 }
@@ -289,11 +286,13 @@ export async function addApartment(
 export async function updateApartment(
   prevState: AddApartmentState,
   listingId: string,
-  formData: FormData
+  formData: FormData,
 ): Promise<AddApartmentState> {
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized user" };
 
   const apartmentData = {
@@ -332,20 +331,20 @@ export async function updateApartment(
   if (error) {
     return { error: error.message };
   }
-  
+
   // This updates the UI without a full browser redirect
   revalidatePath("/landlords/dashboard");
   return { success: true, message: "Listing updated successfully" };
 }
 
 // toggle apartment status
-export async function toggleApartmentStatus(
-  apartmentId: string,
-) {
+export async function toggleApartmentStatus(apartmentId: string) {
   console.log("Action triggered for ID:", apartmentId);
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized user" };
 
   // Ownership check
@@ -372,10 +371,7 @@ export async function toggleApartmentStatus(
 
   // This updates the UI without a full browser redirect
   revalidatePath("/landlords/dashboard");
-  
 }
-
-
 
 const bookingSchema = z.object({
   apartment_id: z.string().uuid("Invalid UUID format"),
@@ -387,19 +383,22 @@ const bookingSchema = z.object({
   status: z.enum(["pending", "confirmed", "cancelled"]).optional(),
 });
 
-export type BookingState = {
-  error?: string;
-  fieldErrors?: string[];
-} | undefined;
-
+export type BookingState =
+  | {
+      error?: string;
+      fieldErrors?: string[];
+    }
+  | undefined;
 
 export async function bookApartment(
   prevState: BookingState,
-  formData: FormData
+  formData: FormData,
 ) {
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized user" };
 
   const apartmentId = formData.get("apartment_id") as string;
@@ -418,15 +417,15 @@ export async function bookApartment(
     return { error: "You cannot book your own apartment" };
   }
 
-const bookingData = {
-  apartment_id: apartmentId,
-  student_id: user.id,
-  landlord_id: apartment.landlord_id,
-  visit_date: formData.get("visit_date") as string,   // matches schema
-  visit_time: formData.get("visit_time") as string,   // matches schema
-  contact_info: formData.get("contact_info") as string, // matches schema
-  status: "pending",
-};
+  const bookingData = {
+    apartment_id: apartmentId,
+    student_id: user.id,
+    landlord_id: apartment.landlord_id,
+    visit_date: formData.get("visit_date") as string, // matches schema
+    visit_time: formData.get("visit_time") as string, // matches schema
+    contact_info: formData.get("contact_info") as string, // matches schema
+    status: "pending",
+  };
 
   const parseResult = bookingSchema.safeParse(bookingData);
   if (!parseResult.success) {
@@ -443,16 +442,17 @@ const bookingData = {
   redirect("/my-bookings");
 }
 
-
 // cancel booking
 
 import { revalidatePath } from "next/cache";
 
 
-export async function cancelBooking(booking_id: string){
+export async function cancelBooking(booking_id: string) {
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("role")
@@ -461,7 +461,6 @@ export async function cancelBooking(booking_id: string){
 
   if (profileError || !profile) return;
 
-  
   if (profile.role !== "student" && profile.role !== "admin") {
     console.error("Unauthorized");
     return;
@@ -478,18 +477,17 @@ export async function cancelBooking(booking_id: string){
   }
 
   // This is the line that "refreshes" the data
-  revalidatePath("/my-bookings"); 
+  revalidatePath("/my-bookings");
   redirect("/my-bookings");
 }
 
-// edit booking 
-export async function editBooking(
-  prevState: BookingState,
-  formData: FormData
-) {
+// edit booking
+export async function editBooking(prevState: BookingState, formData: FormData) {
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized user" };
 
   const bookingData = {
@@ -510,7 +508,7 @@ export async function editBooking(
     .from("bookings")
     .update(bookingData)
     .eq("id", booking_id)
-    .eq("student_id", user.id ); // Ensure student owns the booking
+    .eq("student_id", user.id); // Ensure student owns the booking
 
   if (error) {
     return { error: error.message };
@@ -521,10 +519,12 @@ export async function editBooking(
 
 // confirm bookings (landlord)
 
-export async function confirmBooking(booking_id: string){
+export async function confirmBooking(booking_id: string) {
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("role")
@@ -533,7 +533,6 @@ export async function confirmBooking(booking_id: string){
 
   if (profileError || !profile) return;
 
-  
   if (profile.role !== "landlord" && profile.role !== "admin") {
     // console.error("Unauthorized");
     return;
@@ -550,13 +549,13 @@ export async function confirmBooking(booking_id: string){
   }
 
   // This is the line that "refreshes" the data
-  revalidatePath("/landlords/dashboard/"); 
+  revalidatePath("/landlords/dashboard/");
   // redirect("/landlords/dashboard/my-bookings");
 }
 
 // admin actions
 
-export async function verifyUsers(user_id:string){
+export async function verifyUsers(user_id: string) {
   const supabase = await createClient();
 
   // check if user exists
@@ -572,10 +571,10 @@ export async function verifyUsers(user_id:string){
   }
 
   // Verify user logic here
-  const {error: verificationError} = await supabase
-  .from("profiles")
-  .update({is_verified: true})
-  .eq("id", user_id);
+  const { error: verificationError } = await supabase
+    .from("profiles")
+    .update({ is_verified: true })
+    .eq("id", user_id);
 
   if (verificationError) {
     console.error("Error verifying user:", verificationError);
@@ -583,13 +582,13 @@ export async function verifyUsers(user_id:string){
   }
 
   // console.log("User verified successfully:", verifiedUser);
-  revalidatePath("/admin/dashboard")
+  revalidatePath("/admin/dashboard");
 }
 
-// apartment 
+// apartment
 
-export async function verifyApartments(apartment_id:string){
-  const supabase = await createClient()
+export async function verifyApartments(apartment_id: string) {
+  const supabase = await createClient();
 
   // check if apartment exists
   const { data: apartment, error: apartmentError } = await supabase
@@ -606,7 +605,7 @@ export async function verifyApartments(apartment_id:string){
   // Verify apartment logic here
   const { error: verificationError } = await supabase
     .from("apartments")
-    .update({ is_verified: true })
+    .update({ is_verified: true, verification_status: "verified" })
     .eq("id", apartment_id);
 
   if (verificationError) {
@@ -617,17 +616,48 @@ export async function verifyApartments(apartment_id:string){
   // console.log("Apartment verified successfully:", verifiedApartment);
   revalidatePath("/admin/dashboard");
 }
+export async function rejectApartments(apartment_id: string) {
+  const supabase = await createClient();
 
-  export async function submitReview(formData: FormData) {
-    const supabase = await createClient();
+  // check if apartment exists
+  const { data: apartment, error: apartmentError } = await supabase
+    .from("apartments")
+    .select("*")
+    .eq("id", apartment_id)
+    .single();
 
-    // Extract data from form
-    const apartmentId = formData.get("apartmentId") as string;
-    const rating = Number(formData.get("rating"));
-    const comment = formData.get("comment") as string;
+  if (apartmentError || !apartment) {
+    console.error("Apartment not found:", apartmentError);
+    return;
+  }
 
-    // Get the logged-in user
-    const { data: { user } } = await supabase.auth.getUser();
+  // Verify apartment logic here
+  const { error: verificationError } = await supabase
+    .from("apartments")
+    .update({ is_verified: false, verification_status: "rejected" })
+    .eq("id", apartment_id);
+
+  if (verificationError) {
+    console.error("Error rejecting apartment:", verificationError);
+    return;
+  }
+
+  // console.log("Apartment rejected successfully:", verifiedApartment);
+  revalidatePath("/admin/dashboard");
+}
+
+export async function submitReview(formData: FormData) {
+  const supabase = await createClient();
+
+  // Extract data from form
+  const apartmentId = formData.get("apartmentId") as string;
+  const rating = Number(formData.get("rating"));
+  const comment = formData.get("comment") as string;
+
+  // Get the logged-in user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: "You must be logged in to leave a review." };
 
   // Insert into reviews table
@@ -641,24 +671,24 @@ export async function verifyApartments(apartment_id:string){
   if (error) {
     console.error("Error submitting review:", error.message);
     return { error: error.message };
-
   }
-    
 
   console.log("Review submitted successfully");
 
   // 4. Refresh the apartment page to show the new review
   revalidatePath(`/apartments/${apartmentId}`);
-  return { success: true }; 
+  return { success: true };
 }
 
 export async function saveApartment(apartmentId: string) {
   const supabase = await createClient();
 
   // Get the logged-in user
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: "You must be logged in to save an apartment." };
-  
+
   // check that the user is a student
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
@@ -683,7 +713,7 @@ export async function saveApartment(apartmentId: string) {
     .eq("student_id", user.id)
     .single();
 
-  if (existingError && existingError.code !== 'PGRST116') {
+  if (existingError && existingError.code !== "PGRST116") {
     console.error("Error checking saved apartments:", existingError.message);
     return { error: existingError.message };
   }
@@ -708,5 +738,82 @@ export async function saveApartment(apartmentId: string) {
   // redirect to saved apartments page
   revalidatePath(`/saved-apartments`);
   redirect(`/saved-apartments`);
- 
+}
+
+// initiateverification payment
+
+export async function initiateVerificationPayment(apartmentId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized user" };
+  // verify that user is a landlord
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user?.id)
+    .single();
+
+  if (profileError || !profile) {
+    console.error("Unable to load user profile:", profileError?.message);
+    return { error: "Unable to load user profile." };
+  }
+
+  if (profile.role !== "landlord") {
+    return { error: "Only landlords can initiate verification payments." };
+  }
+
+  // Store a pending payment record before redirecting
+
+  const amountInNaira = 1000; // ₦1,000
+  const { data } = await supabase
+    .from("verification_payments")
+    .insert({
+      apartment_id: apartmentId,
+      landlord_id: user.id,
+      amount: amountInNaira * 100, // ₦ to kobo (Paystack uses kobo)
+      status: "pending",
+    })
+    .select()
+    .single();
+
+  return { paymentId: data.id, email: user.email };
+}
+
+// verify payment on clientside
+
+export async function verifyPayment(reference: string) {
+  const res = await fetch(
+    `https://api.paystack.co/transaction/verify/${reference}`,
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+      },
+    }
+  )
+
+   const data = await res.json()
+  console.log('Paystack verify response:', data.data.status)
+  console.log('Metadata:', data.data.metadata)
+
+  if (data.data.status === 'success') {
+    const { apartment_id, payment_id } = data.data.metadata
+    const supabase = await createClient()
+
+    const { error: e1 } = await supabase
+      .from('verification_payments')
+      .update({ status: 'paid', paystack_reference: reference })
+      .eq('id', payment_id)
+
+    const { error: e2 } = await supabase
+      .from('apartments')
+      .update({ verification_status: 'pending_review' })
+      .eq('id', apartment_id)
+
+    console.log('DB errors:', e1, e2)
+    revalidatePath("/landlords/dashboard");
+  }
+
+  
 }

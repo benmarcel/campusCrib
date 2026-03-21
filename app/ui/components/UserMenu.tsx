@@ -39,8 +39,7 @@ export default function UserMenu({ userProfile }: {userProfile: Profile | null})
         ];
       case "admin":
         return [
-          { href: '/admin/properties', label: 'Manage Properties', icon: Building },
-          { href: '/admin/users', label: 'Manage Users', icon: Users },
+          { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard  },
         ];
       case "landlord":
         return [

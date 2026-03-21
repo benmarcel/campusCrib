@@ -35,6 +35,7 @@ Bethel needs more than just a list of houses; she needs a **reliable, verified e
 * **Visit Coordinator:** A built-in system to schedule physical tours of the property.
 * **Review System:** A peer-to-peer rating system specifically for student tenants.
 
+### Key Technical Features
 ---
 
 ## 2. Tech Stack
@@ -147,3 +148,5 @@ npm run dev or bun run dev
 3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
+
+

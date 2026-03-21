@@ -63,15 +63,15 @@ export default function ListingForm() {
       )}
 
       <div className="space-y-5">
-        {/* House Title */}
+        {/* House Type */}
         <div className="flex flex-col">
-          <label className={labelStyle}>House Title</label>
+          <label className={labelStyle}>House Type</label>
           <select name="title" className={inputStyle} required>
             <option value="" disabled selected>
               Select House Type
             </option>
             <option value="Single room">Single room</option>
-            <option value="Self-contained">Self-contained</option>
+            <option value="Self-contained">Self-contain</option>
             <option value="2 bedroom">2 bedroom</option>
             <option value="3 bedroom">3 bedroom</option>
           </select>
@@ -121,7 +121,7 @@ export default function ListingForm() {
           <label className={labelStyle}>Full Address</label>
           <input
             name="address"
-            placeholder="e.g, 123 Main St, Abraka"
+            placeholder="e.g, 123 Main St, Abraka delta state"
             className={inputStyle}
             required
           />
@@ -140,7 +140,7 @@ export default function ListingForm() {
 
         {/* File Upload Area */}
         <div className="flex flex-col">
-          <label className={labelStyle}>Upload Crib Photos</label>
+          <label className={labelStyle}>Upload Apartment Photos</label>
           <div className="relative group">
             <input
               type="file"
@@ -164,7 +164,7 @@ export default function ListingForm() {
         disabled={isPending}
         className="w-full bg-[#001F3F] text-white py-4 rounded-xl mt-8 font-bold uppercase tracking-widest hover:bg-opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {isPending ? "Uploading to Storage..." : "Post Listing"}
+        {isPending ? "Adding Apartment..." : "Add Apartment"}
       </button>
     </form>
   );

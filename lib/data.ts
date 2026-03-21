@@ -9,7 +9,8 @@ import type {
   BookingsWithApartment,
   User,
   ApartmentDetail,
-  SavedApartments
+  SavedApartments,
+  ApartmentForVerification
 } from "./definitions";
 import { createClient } from "./supabase/server";
 import { redirect } from "next/navigation";
@@ -106,7 +107,7 @@ export async function getAllUsersForVerification(): Promise<User[]> {
 
 // get all apartments for verification 
 
-export async function getAllApartmentsForVerification(): Promise<Apartment[]>{
+export async function getAllApartmentsForVerification(): Promise<ApartmentForVerification[]>{
    
 const supabase = await createClient();
   const {
@@ -134,10 +135,16 @@ if(adminError){
 
 //  get all apartments for verification
 
-const {data:apartments, error} = await supabase 
-.from("apartments")
-.select("*")
-.eq("is_verified", false)
+const { data: apartments, error } = await supabase
+    .from('apartments')
+    .select(`
+      *,
+      profiles(full_name, phone_number),
+      verification_payments(amount, paystack_reference, created_at)
+    `)
+    .eq('is_verified', false)
+    .eq('verification_status', 'pending_review')
+    .order('created_at', { ascending: false });
 
 if (error){
   return []
@@ -165,6 +172,7 @@ export async function getAllApartments(
     `,
     )
     .eq("is_active", true)
+    .eq("is_verified", true)
     .limit(1, { foreignTable: "apartment_images" });
 
   // SEARCH (location)
@@ -507,4 +515,24 @@ export async function getSavedApartmentsByStudentId(): Promise<
   }
 console.log("Saved Apartments:", savedApartments);  
   return savedApartments || [];
+}
+
+export async function getUserCount() {
+  const supabase = await createClient()
+  const { count } = await supabase
+    .from('profiles')
+    .select('*', { count: 'exact', head: true })
+    .eq('is_verified', false)
+    .neq('role', 'admin')
+  return count ?? 0
+}
+
+export async function getApartmentCount() {
+  const supabase = await createClient()
+  const { count } = await supabase
+    .from('apartments')
+    .select('*', { count: 'exact', head: true })
+    .eq('is_verified', false)
+    .eq('verification_status', 'pending_review')
+  return count ?? 0
 }

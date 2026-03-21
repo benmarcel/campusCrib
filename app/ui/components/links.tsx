@@ -18,7 +18,7 @@ export function UpdateApartment({ id }: { id: string }) {
   return (
     <Link
       href={`/landlords/dashboard/${id}/edit`}
-      className="flex h-10 items-center rounded-lg bg-primary px-4 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+      className="flex h-10 items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
     >
       <PencilIcon className="w-5" /><span className="ml-2 hidden md:block">Edit Apartment</span>
     </Link>

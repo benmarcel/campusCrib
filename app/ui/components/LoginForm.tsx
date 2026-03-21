@@ -4,7 +4,7 @@ import { useActionState, useState } from 'react';
 import { authenticate } from '@/lib/actions';
 import { useSearchParams } from 'next/navigation';
 import { Eye, EyeClosed } from 'lucide-react';
-
+import Alert from './Alert';
 export default function LoginForm() {
   const searchParams = useSearchParams();
   const callBackUrl = searchParams.get('callbackUrl')
@@ -63,9 +63,7 @@ export default function LoginForm() {
       </button>
 
       {errorMessage && (
-        <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-100">
-          <p className="text-sm text-red-600 text-center font-medium">{errorMessage}</p>
-        </div>
+        <Alert variant="error" message={errorMessage} />
       )}
     </form>
   );
