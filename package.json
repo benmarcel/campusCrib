@@ -40,7 +40,7 @@
   "name": "campus-crib",
   "version": "0.2.0",
   "description": "**Campus Crib** is a full-stack web application designed to help students find and book affordable housing close to their university campuses. It bridges the gap between local landlords and the student community.",
-  "main": "index.js",
+  
   "directories": {
     "lib": "lib"
   },
