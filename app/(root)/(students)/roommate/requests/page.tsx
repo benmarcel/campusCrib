@@ -1,4 +1,5 @@
 // import { connection } from "next/server";
+  export const dynamic = 'force-dynamic';
 import { getLoggedinUser } from "@/lib/data";
 import { Suspense } from "react";
 import Link from "next/link";

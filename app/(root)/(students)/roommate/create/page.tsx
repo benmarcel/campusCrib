@@ -1,3 +1,5 @@
+  export const dynamic = 'force-dynamic';
+
 import RoommateProfileForm from '@/app/ui/roommate/RoommateProfileForm'
 import {Suspense} from 'react'
 import { getRoommateProfile } from '@/lib/data'

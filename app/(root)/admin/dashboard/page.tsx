@@ -1,7 +1,9 @@
+export const dynamic = 'force-dynamic';
 import { Suspense } from "react";
 import Link from "next/link";
 import { ShieldCheck, Users, Building2, CheckCircle2  } from "lucide-react";
 import UserVerificationList from "@/app/ui/admin/user-verification-list";
+
 import ApartmentVerificationList from "@/app/ui/admin/apartment-verification-list";
 import { getUserCount, getApartmentCount } from "@/lib/data";
 import { StatCard } from "@/app/ui/admin/statcard";
