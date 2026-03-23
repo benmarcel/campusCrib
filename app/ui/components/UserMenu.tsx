@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { User, LogOut, ChevronDown, BookMarked, Heart, LayoutDashboard, Users, Building } from "lucide-react";
+import { User, LogOut, ChevronDown, BookMarked, Heart, LayoutDashboard,  Users } from "lucide-react";
 import { logout } from "@/lib/actions";
 import { usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
@@ -36,6 +36,7 @@ export default function UserMenu({ userProfile }: {userProfile: Profile | null})
         return [
           { href: '/my-bookings', label: 'My Bookings', icon: BookMarked },
           { href: '/saved-apartments', label: 'Saved Apartments', icon: Heart },
+          { href: '/roommate', label: 'Find roomie', icon: Users },
         ];
       case "admin":
         return [

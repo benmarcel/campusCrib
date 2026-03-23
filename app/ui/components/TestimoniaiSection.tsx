@@ -6,27 +6,27 @@ import Image from 'next/image';
 const testimonials = [
   {
     id: 1,
-    name: 'BenFelix',
+    name: 'Ben Felix',
     role: 'FIRST YEAR STUDENT',
     school: 'DELSU',
     image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
-    text: 'As a first-year student, I had no idea where to even start looking for accommodation. Campus Crib made the whole process feel manageable. The property listings were super detailed with clear photos, and I could even see the closest bus routes and grocery stores on the site. It\'s an incredibly user-friendly platform that helps you find a place that\'s safe, affordable, and feels right for you.',
+    text: "As a first-year student, I had no idea where to even start looking for accommodation. Campus Crib made the whole process feel manageable. The listings were super detailed with clear photos. It's an incredibly user-friendly platform that helps you find a place that's safe and affordable.",
   },
   {
     id: 2,
-    name: 'Tobi kunle',
-    role: 'Final Year Student',
+    name: 'Tobi Kunle',
+    role: 'FINAL YEAR STUDENT',
     school: 'UNILAG',
     image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
-    text: 'I spent so much time on other sites trying to find a good place, but they were either too expensive or too far from campus. Campus Crib\'s search filters were a game-changer. I could set my budget, preferred distance from campus, and all the amenities I needed. I found the perfect place in a week, and it was so easy to contact the landlord directly through the app. It saved me a lot of stress.',
+    text: "I spent so much time on other sites, but they were either too expensive or too far from campus. Campus Crib's search filters were a game-changer. I found the perfect place in a week, and it was so easy to contact the landlord directly through the app.",
   },
   {
     id: 3,
     name: 'Amaka Nnagi',
-    role: '200l STUDENT',
+    role: '200L STUDENT',
     school: 'UNN',
     image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
-    text: 'I\'ve used Campus Crib for two years in a row now. What I love most is the transparency. All the prices are upfront, and there are no hidden fees like I\'ve found on other platforms. The verification process also gave me confidence that the properties were legitimate and well-maintained. It\'s the only site I trust when it\'s time to find a new place to live.',
+    text: "I've used Campus Crib for two years in a row now. What I love most is the transparency. All the prices are upfront, and there are no hidden fees. The verification process gave me confidence that the properties were legitimate. It's the only site I trust.",
   },
 ];
 
@@ -42,100 +42,90 @@ export default function TestimonialsSection() {
   };
 
   return (
-    <section className="py-16 px-4 bg-gray-50">
+    <section className="py-20 px-4 bg-[#F5F5F5]">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <div className="mb-12">
-          <h2 className="text-3xl md:text-4xl font-medium text-gray-900 border-b-4 border-t-4 border-accent inline-block py-2">
-            What Students say about campus crib
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-black text-[#003366] uppercase tracking-tight inline-block relative">
+            What Students Say
+            <div className="h-1.5 w-full bg-[#00BCD4] absolute -bottom-2 left-0 rounded-full opacity-30" />
           </h2>
+          <p className="text-gray-500 mt-6 max-w-xl mx-auto">
+            Join thousands of students who found their perfect off-campus crib through our platform.
+          </p>
         </div>
 
         {/* Testimonials Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           {testimonials.map((testimonial, index) => (
             <div
               key={testimonial.id}
-              className={`bg-white rounded-lg shadow-md p-6 transition-all duration-500 hover:shadow-xl hover:-translate-y-1 ${
-                index === currentIndex ? 'ring-2 ring-[#1e3a8a]' : ''
+              className={`relative bg-white rounded-2xl p-8 transition-all duration-500 hover:shadow-2xl border-2 ${
+                index === currentIndex 
+                ? 'border-[#00BCD4] shadow-xl -translate-y-2' 
+                : 'border-transparent shadow-sm translate-y-0'
               }`}
-              style={{
-                animation: `fadeIn 0.6s ease-out ${index * 0.2}s both`,
-              }}
             >
-              {/* Profile */}
-              <div className="flex flex-col items-center mb-4">
-                <div className="relative w-24 h-24 rounded-full overflow-hidden mb-3 ring-4 ring-gray-100">
+              {/* Quote Icon Accent */}
+              <div className="absolute top-6 right-8 text-[#00BCD4] opacity-20">
+                <svg width="35" height="35" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M14.017 21L14.017 18C14.017 16.8954 14.9124 16 16.017 16H19.017C19.5693 16 20.017 15.5523 20.017 15V9C20.017 8.44772 19.5693 8 19.017 8H15.017C14.4647 8 14.017 8.44772 14.017 9V12C14.017 12.5523 13.5693 13 13.017 13H11.017C10.4647 13 10.017 12.5523 10.017 12V9C10.017 7.34315 11.3601 6 13.017 6H19.017C20.6739 6 22.017 7.34315 22.017 9V15C22.017 18.3137 19.3307 21 16.017 21H14.017ZM3.017 21L3.017 18C3.017 16.8954 3.91243 16 5.017 16H8.017C8.56928 16 9.017 15.5523 9.017 15V9C9.017 8.44772 8.56928 8 8.017 8H4.017C3.46472 8 3.017 8.44772 3.017 9V12C3.017 12.5523 2.56928 13 2.017 13H0.017C-0.535282 13 -1.017 12.5523 -1.017 12V9C-1.017 7.34315 0.326142 6 2.017 6H8.017C9.67386 6 11.017 7.34315 11.017 9V15C11.017 18.3137 8.33071 21 5.017 21H3.017Z" />
+                </svg>
+              </div>
+
+              {/* Profile Wrapper */}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="relative w-16 h-16 rounded-full overflow-hidden ring-2 ring-[#00BCD4]/20 ring-offset-2">
                   <Image
                     src={testimonial.image}
                     alt={testimonial.name}
-                    className="w-full h-full object-cover"
-                    width={96}
-                    height={96}
+                    className="object-cover"
+                    fill
                   />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900">{testimonial.name}</h3>
-                <p className="text-sm text-gray-600 font-semibold">{testimonial.role}</p>
-                <p className="text-xs text-gray-500">{testimonial.school}</p>
+                <div>
+                  <h3 className="font-bold text-[#003366]">{testimonial.name}</h3>
+                  <p className="text-[10px] font-bold text-[#00BCD4] uppercase tracking-wider">
+                    {testimonial.school}
+                  </p>
+                </div>
               </div>
 
-              {/* Testimonial Text */}
-              <p className="text-gray-700 text-sm leading-relaxed text-center">
-                {testimonial.text}
+              {/* Testimonial Content */}
+              <p className="text-gray-600 text-sm leading-relaxed italic">
+                &ldquo;{testimonial.text}&rdquo;
               </p>
+              
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                 <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest">{testimonial.role}</p>
+              </div>
             </div>
           ))}
         </div>
 
         {/* Navigation Arrows */}
-        <div className="flex justify-center gap-4">
+        <div className="flex justify-center gap-6">
           <button
             onClick={prevTestimonial}
-            className="w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-[#1e3a8a] hover:text-white transition-colors duration-300"
+            className="w-12 h-12 rounded-xl bg-white shadow-sm border border-gray-200 flex items-center justify-center text-[#003366] hover:bg-[#003366] hover:text-white hover:border-[#003366] transition-all duration-300"
             aria-label="Previous testimonial"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-              className="w-5 h-5"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
             </svg>
           </button>
+          
           <button
             onClick={nextTestimonial}
-            className="w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-[#1e3a8a] hover:text-white transition-colors duration-300"
+            className="w-12 h-12 rounded-xl bg-[#00BCD4] shadow-lg shadow-[#00BCD4]/20 flex items-center justify-center text-[#003366] hover:bg-[#003366] hover:text-white transition-all duration-300"
             aria-label="Next testimonial"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-              className="w-5 h-5"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
             </svg>
           </button>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </section>
   );
 }

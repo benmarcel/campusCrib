@@ -17,7 +17,7 @@ export default function VerifyButton({ apartmentId }: { apartmentId: string }) {
           email,
           amount: 100000,
           currency: 'NGN',
-          metadata: { apartment_id: apartmentId, payment_id: paymentId },
+          metadata: { apartment_id: apartmentId, payment_id: paymentId, type: 'apartment_verification' },
           callback: function(response: any) {
             verifyPayment(response.reference)
             console.log('Payment successful with reference:', response.reference)

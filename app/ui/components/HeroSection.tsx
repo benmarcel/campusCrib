@@ -1,6 +1,15 @@
 'use client';
-import { GetAPlace } from './links';
+
 import { useState, useEffect } from 'react';
+import { GetAPlace } from './links';
+import Image from 'next/image';
+
+const SOCIAL_PROOF_IMAGES = [
+  "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=64&h=64&q=80", 
+  "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=64&h=64&q=80", 
+  "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=64&h=64&q=80", 
+  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=64&h=64&q=80",
+];
 
 export default function HeroSection() {
   const [isVisible, setIsVisible] = useState(false);
@@ -32,14 +41,20 @@ export default function HeroSection() {
         </p>
         <GetAPlace />
 
-        {/* Trust Badge */}
-        <div className="absolute bottom-8 left-8 flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-3 rounded-lg">
+        {/* Trust Badge - Your Original Positioning */}
+        <div className="absolute bottom-8 left-8 flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-3 rounded-lg border border-white/20">
           <div className="flex -space-x-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 border-2 border-white" />
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 border-2 border-white" />
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-red-400 border-2 border-white" />
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-emerald-400 border-2 border-white" />
-            <div className="w-8 h-8 rounded-full bg-[#00d4ff] border-2 border-white flex items-center justify-center">
+            {SOCIAL_PROOF_IMAGES.map((src, i) => (
+              <div key={i} className="relative w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-gray-200">
+                <Image 
+                  src={src} 
+                  alt="Student" 
+                  fill 
+                  className="object-cover"
+                />
+              </div>
+            ))}
+            <div className="w-8 h-8 rounded-full bg-[#00d4ff] border-2 border-white flex items-center justify-center shadow-lg">
               <span className="text-white text-xs font-bold">+</span>
             </div>
           </div>

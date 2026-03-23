@@ -51,6 +51,21 @@ export async function getProfile(): Promise<Profile> {
   };
 }
 
+// get current user
+export async function getCurrentUser () {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/auth/login");
+  }
+
+  return user;
+}
+
 // get partial profile for navbar
 import { cache } from "react";
 
@@ -213,7 +228,7 @@ export async function getAllApartments(
     return [];
   }
 
-  console.log("Fetched apartments:", data);
+  // console.log("Fetched apartments:", data);
 
   if (!data) {
     return [];
@@ -535,4 +550,200 @@ export async function getApartmentCount() {
     .eq('is_verified', false)
     .eq('verification_status', 'pending_review')
   return count ?? 0
+}
+
+export async function getRoommateProfile() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) redirect('/login')
+
+  // Check if profile already exists — if so, pre-fill the form
+  const { data: existing } = await supabase
+    .from('roommate_profiles')
+    .select('*')
+    .eq('student_id', user.id)
+    .single()
+
+  return existing ?? null
+}
+
+export async function getAllRoommateProfiles(currentUserId: string) {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('roommate_profiles')
+    .select(`
+      *,
+      profiles(id, full_name, avatar_url, school)
+    `)
+    .eq('is_active', true)
+    .neq('student_id', currentUserId) // don't show your own profile
+    .order('created_at', { ascending: false })
+
+  if (error) return []
+  return data
+}
+
+export async function getMyRoommateProfile(studentId: string) {
+  const supabase = await createClient()
+
+  const { data } = await supabase
+    .from('roommate_profiles')
+    .select('*')
+    .eq('student_id', studentId)
+    .single()
+
+  return data
+}
+
+export async function getSentRequests(senderId: string) {
+  const supabase = await createClient()
+
+  const { data } = await supabase
+    .from('roommate_requests')
+    .select('receiver_id, status')
+    .eq('sender_id', senderId)
+
+  return data ?? []
+}
+
+export async function getRoommateProfileById(id: string) {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('roommate_profiles')
+    .select(`
+      *,
+      profiles(id, full_name, avatar_url, school, phone_number)
+    `)
+    .or(`id.eq.${id},student_id.eq.${id}`)
+    .single()
+
+  if (error) return null
+  return data
+}
+
+export async function getRequestBetween(userA: string, userB: string) {
+  const supabase = await createClient()
+
+  const { data } = await supabase
+    .from('roommate_requests')
+    .select('id, status')
+    .or(
+      `and(sender_id.eq.${userA},receiver_id.eq.${userB}),and(sender_id.eq.${userB},receiver_id.eq.${userA})`
+    )
+    .single()
+
+  return data ?? null
+}
+
+// Fetch roommate requests that were SENT TO a specific user
+// Example: "Show me all requests other people sent to me"
+export async function getIncomingRequests(receiverId: string) {
+  // Create a Supabase client so we can query the database
+  const supabase = await createClient()
+
+  // Query the roommate_requests table
+  // - `*` gets all columns from roommate_requests
+  // - `sender:profiles!...` joins the sender's profile information
+  //   using the foreign key roommate_requests_sender_id_fkey
+  // - `.eq('receiver_id', receiverId)` filters requests meant for this receiver
+  // - `.order(...)` sorts newest requests first
+  const { data, error } = await supabase
+    .from('roommate_requests')
+    .select(`
+      *,
+      sender:profiles!roommate_requests_sender_id_fkey(
+        id, full_name, avatar_url, phone_number
+      )
+    `)
+    .eq('receiver_id', receiverId)
+    .order('created_at', { ascending: false })
+
+  // If the main query fails, log the error and return an empty array
+  // so the app doesn't crash
+  if (error) {
+    console.error('getIncomingRequests error:', error)
+    return []
+  }
+
+  // For each roommate request, fetch the sender's roommate profile
+  // from the roommate_profiles table
+  //
+  // Why separately?
+  // Because this query is not directly joining roommate_profiles here;
+  // instead, we enrich each request after the first query finishes.
+  //
+  // Promise.all ensures all async profile fetches finish before returning.
+  const enriched = await Promise.all(
+    (data ?? []).map(async request => {
+      // Find the roommate profile whose student_id matches the sender_id
+      // of the current request
+      const { data: roommateProfile } = await supabase
+        .from('roommate_profiles')
+        .select('school, department, habits, bio')
+        .eq('student_id', request.sender_id)
+        .single()
+
+      // Return the original request plus the sender's roommate profile
+      return { ...request, roommate_profiles: roommateProfile }
+    })
+  )
+
+  // Return the fully enriched list of incoming requests
+  return enriched
+}
+
+// Fetch roommate requests that were SENT BY a specific user
+// Example: "Show me all requests I sent to other people"
+export async function getOutgoingRequests(senderId: string) {
+  // Create a Supabase client so we can query the database
+  const supabase = await createClient()
+
+  // Query the roommate_requests table
+  // - `*` gets all columns from roommate_requests
+  // - `receiver:profiles!...` joins the receiver's profile information
+  //   using the foreign key roommate_requests_receiver_id_fkey
+  // - `.eq('sender_id', senderId)` filters requests created by this sender
+  // - `.order(...)` sorts newest requests first
+  const { data, error } = await supabase
+    .from('roommate_requests')
+    .select(`
+      *,
+      receiver:profiles!roommate_requests_receiver_id_fkey(
+        id, full_name, avatar_url
+      )
+    `)
+    .eq('sender_id', senderId)
+    .order('created_at', { ascending: false })
+
+  // If the main query fails, log the error and return an empty array
+  if (error) {
+    console.error('getOutgoingRequests error:', error)
+    return []
+  }
+
+  // For each outgoing request, fetch the receiver's roommate profile
+  // from the roommate_profiles table
+  //
+  // Here we use request.receiver_id because this function is about
+  // the person receiving the request that the sender sent out.
+  const enriched = await Promise.all(
+    (data ?? []).map(async request => {
+      // Find the roommate profile whose student_id matches the receiver_id
+      // of the current request
+      const { data: roommateProfile } = await supabase
+        .from('roommate_profiles')
+        .select('school, department, habits')
+        .eq('student_id', request.receiver_id)
+        .single()
+
+      // Return the original request plus the receiver's roommate profile
+      return { ...request, roommate_profiles: roommateProfile }
+    })
+  )
+
+  // Return the fully enriched list of outgoing requests
+  return enriched
 }

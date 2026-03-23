@@ -16,6 +16,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  allowedDevOrigins: ["https://fattenable-hadlee-unpossessable.ngrok-free.dev", "http://localhost:3000"],
   
 };
 

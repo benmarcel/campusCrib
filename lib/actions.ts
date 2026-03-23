@@ -3,6 +3,10 @@
 import { z } from "zod";
 import { createClient } from "./supabase/server";
 import { redirect } from "next/navigation";
+import {
+  sendRoommateRequestEmail,
+  sendRoommateResponseEmail
+} from '@/lib/email'
 
 export async function authenticate(
   prevState: string | undefined,
@@ -96,8 +100,6 @@ export async function register(
       redirect("/apartments");
   }
 }
-
-
 
 // update profile
 
@@ -446,7 +448,6 @@ export async function bookApartment(
 
 import { revalidatePath } from "next/cache";
 
-
 export async function cancelBooking(booking_id: string) {
   const supabase = await createClient();
 
@@ -790,30 +791,243 @@ export async function verifyPayment(reference: string) {
       headers: {
         Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
       },
-    }
-  )
+    },
+  );
 
-   const data = await res.json()
-  console.log('Paystack verify response:', data.data.status)
-  console.log('Metadata:', data.data.metadata)
+  const data = await res.json();
+  console.log("Paystack verify response:", data.data.status);
+  console.log("Metadata:", data.data.metadata);
 
-  if (data.data.status === 'success') {
-    const { apartment_id, payment_id } = data.data.metadata
-    const supabase = await createClient()
+  if (data.data.status === "success") {
+    const { apartment_id, payment_id } = data.data.metadata;
+    const supabase = await createClient();
 
     const { error: e1 } = await supabase
-      .from('verification_payments')
-      .update({ status: 'paid', paystack_reference: reference })
-      .eq('id', payment_id)
+      .from("verification_payments")
+      .update({ status: "paid", paystack_reference: reference })
+      .eq("id", payment_id);
 
     const { error: e2 } = await supabase
-      .from('apartments')
-      .update({ verification_status: 'pending_review' })
-      .eq('id', apartment_id)
+      .from("apartments")
+      .update({ verification_status: "pending_review" })
+      .eq("id", apartment_id);
 
-    console.log('DB errors:', e1, e2)
+    console.log("DB errors:", e1, e2);
     revalidatePath("/landlords/dashboard");
   }
+}
 
-  
+export async function initiateRoommatePayment(receiverId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) throw new Error("Not authenticated");
+
+
+  // Block if sender has no roommate profile
+  const { data: myProfile } = await supabase
+    .from('roommate_profiles')
+    .select('id')
+    .eq('student_id', user.id)
+    .single()
+
+  if (!myProfile) {
+    throw new Error('You need to create a roommate profile before connecting with others.')
+  }
+
+  // Block if a request already exists between these two
+  const { data: existing } = await supabase
+    .from("roommate_requests")
+    .select("id, status")
+    .eq("sender_id", user.id)
+    .eq("receiver_id", receiverId)
+    .single();
+
+  if (existing) {
+    throw new Error(
+      existing.status === "declined"
+        ? "This person has declined your request. You cannot send another."
+        : "You have already sent a request to this person.",
+    );
+  }
+
+  // Get receiver email for Paystack
+  const { data: receiver } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("id", receiverId)
+    .single();
+
+  // Create pending payment record
+  const { data: payment } = await supabase
+    .from("roommate_payments")
+    .insert({
+      sender_id: user.id,
+      receiver_id: receiverId,
+      amount: 20000, // ₦200 in kobo
+      status: "pending",
+    })
+    .select()
+    .single();
+
+  return {
+    paymentId: payment.id,
+    email: user.email,
+    receiverName: receiver?.full_name,
+    senderId: user.id,
+  };
+}
+
+// Called by webhook after Paystack confirms payment
+export async function confirmRoommatePayment(
+  reference: string,
+  paymentId: string,
+  senderId: string,
+  receiverId: string,
+  message?: string,
+) {
+  const res = await fetch(
+    `https://api.paystack.co/transaction/verify/${reference}`,
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+      },
+    },
+  );
+
+  const data = await res.json();
+  console.log("Paystack verify response:", data.data.status);
+  console.log("Metadata:", data.data.metadata);
+
+  if (data.data.status === "success") {
+    const supabase = await createClient();
+
+    // Update payment record
+    await supabase
+      .from("roommate_payments")
+      .update({ status: "paid", paystack_reference: reference })
+      .eq("id", paymentId);
+
+    // Now create the actual request
+    await supabase.from("roommate_requests").insert({
+      sender_id: senderId,
+      receiver_id: receiverId,
+      message: message ?? null,
+      status: "pending",
+      paystack_reference: reference,
+    });
+    // Fetch names + emails for the notification
+  const { data: users } = await supabase
+    .from('profiles')
+    .select('id, full_name, school')
+    .in('id', [senderId, receiverId])
+
+  const sender = users?.find(u => u.id === senderId)
+  const receiver = users?.find(u => u.id === receiverId)
+
+  // Get receiver's auth email from Supabase auth
+  const { data: receiverAuth } = await supabase
+    .rpc('get_user_email', { user_id: receiverId })
+
+  // Get sender's roommate profile for bio/dept
+  const { data: senderProfile } = await supabase
+    .from('roommate_profiles')
+    .select('bio, department')
+    .eq('student_id', senderId)
+    .single()
+
+  if (receiver && receiverAuth) {
+    await sendRoommateRequestEmail({
+      receiverEmail: receiverAuth,
+      receiverName: receiver.full_name,
+      senderName: sender?.full_name ?? 'A student',
+      senderSchool: sender?.school ?? '',
+      senderDepartment: senderProfile?.department,
+      senderBio: senderProfile?.bio,
+    }).catch(err => console.error('Email send failed:', err))
+  }
+  }
+
+}
+
+// Receiver accepts
+export async function acceptRoommateRequest(requestId: string) {
+  const supabase = await createClient();
+
+  await supabase
+    .from("roommate_requests")
+    .update({ status: "accepted" })
+    .eq("id", requestId);
+
+    // Fetch request details for email
+  const { data: request } = await supabase
+    .from('roommate_requests')
+    .select(`
+      sender_id,
+      receiver_id,
+      sender:profiles!roommate_requests_sender_id_fkey(full_name),
+      receiver:profiles!roommate_requests_receiver_id_fkey(full_name, phone_number)
+    `)
+    .eq('id', requestId)
+    .single()
+
+  if (request) {
+    const { data: senderAuth } = await supabase
+      .rpc('get_user_email', { user_id: request.sender_id })
+
+    if (senderAuth) {
+      await sendRoommateResponseEmail({
+        senderEmail: senderAuth,
+        senderName: request.sender[0]?.full_name ?? '',
+        receiverName: request.receiver[0]?.full_name ?? '',
+        receiverPhone: request.receiver[0]?.phone_number,
+        receiverId: request.receiver_id,
+        status: 'accepted',
+      }).catch(err => console.error('Email send failed:', err))
+    }
+  }
+
+  revalidatePath("/roommate/requests");
+}
+
+// Receiver declines
+export async function declineRoommateRequest(requestId: string) {
+  const supabase = await createClient();
+
+  await supabase
+    .from("roommate_requests")
+    .update({ status: "declined" })
+    .eq("id", requestId);
+
+    
+  revalidatePath("/roommate/requests");
+}
+
+// Create or update roommate profile
+export async function upsertRoommateProfile(formData: {
+  school: string;
+  department?: string;
+  bio?: string;
+  habits: string[];
+}) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) throw new Error("Not authenticated");
+
+  await supabase.from("roommate_profiles").upsert(
+    {
+      student_id: user.id,
+      ...formData,
+      is_active: true,
+    },
+    { onConflict: "student_id" },
+  );
+
+  revalidatePath("/roommate");
+  revalidatePath("/roommate/create");
 }
