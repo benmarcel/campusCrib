@@ -6,6 +6,7 @@
 
 * **Target Audience:** University Students & Property Managers.
 * **Key Value Prop:** Verified listings, proximity-based search, and seamless booking.
+* **Live Link:** https://campuscri-b.netlify.app/
 
 
 ## Problem Statement:
@@ -111,42 +112,61 @@ npm run dev or bun run dev
 ## 6. Folder Structure
 
 ```text
+campusCrib/
 ├── app/
-│   ├── (auth)/          # Authentication routes (Login/Signup)
-│   ├── (root)/          # Core app routes (Students, admin, landlords, profile)
-│   ├── globals.css      # Global styles
-│   ├── page.tsx         # Home page
-│   └── layout.tsx       # Root configuration (Providers)
-│  
-├── lib/                 # supabase(config), actions, data, definitions(types), utils
-├── ui/
-│   ├── components/      # Shared components (Navbar, Footer, etc..)
-│   ├── Landlords/       # Landlord route related component
-│   ├── student/         # Student route related component
-│   ├── admin/           # admin route related component
-│   └── skeletons/       # Non-blocking ui componets (components that shows while user data is still fetched) 
-└── public/              # Static assets (Images, Icons)
+│   ├── auth/
+│   │   ├── login/                   →  /login
+│   │   └── register/                →  /register
+│   │
+│   ├── (root)/
+│   │   ├── (student)/               →  bookings/, roommate/, my-bookings/, saved-apartments/
+│   │   ├── landlord/
+│   │   │   └── dashboard/           →  [id]/, add/, my-bookings/
+│   │   ├── admin/
+│   │   │   └── dashboard/           →  /admin/dashboard
+│   │   ├── profile/                 →  /profile/*
+│   │   ├── apartments/              →  /apartments/[id]
+│   │   ├── layout.tsx               →  layout
+│   │   └── page.tsx                 →  HomePage
+│   │
+│   ├── api/
+│   │   └── webhooks/
+│   │       └── paystack/            →  POST /api/webhooks/paystack
+│   │
+│   ├── emails/
+│   │   ├── RoommateRequestEmail.tsx
+│   │   └── RoommateResponseEmail.tsx
+│   │
+│   ├── ui/
+│   │   ├── components/              →  Shared components (Navbar, Footer)
+│   │   ├── admin/                   →  Admin UI components
+│   │   ├── landlord/                →  Landlord UI components
+│   │   ├── student/                 →  Student UI components
+│   │   ├── roommate/
+│   │   │   ├── RoommateCard.tsx
+│   │   │   ├── RoommateProfileForm.tsx
+│   │   │   ├── ConnectButton.tsx
+│   │   │   ├── IncomingRequestCard.tsx
+│   │   │   └── OutgoingRequestCard.tsx
+│   │   └── skeletons/               →  Loading skeleton components
+│   │
+│   ├── globals.css
+│   └── layout.tsx                   →  Root layout
+│
+├── lib/
+│   ├── supabase/                    →  Supabase client config (browser + server)
+│   ├── actions.ts                   →  Next.js Server Actions
+│   ├── data.ts                      →  Data fetching functions
+│   ├── email.ts                     →  Resend email utility
+│   ├── definitions.ts               →  TypeScript types & interfaces
+│   └── utils.ts                     →  Shared utility functions
+│
+└── public/                          →  Static assets            # Static assets (Images, Icons)
 
 ```
 
 ---
 
-## 7. Roadmap
 
-* [x] Initial Project Setup
-* [x] Route Grouping for Auth/Root
-* [X] Integration with Database
-* [ ] Map View for Property Locations
-* [ ] Payment Gateway Integration
-
----
-
-## 8. Contributing
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
 
 

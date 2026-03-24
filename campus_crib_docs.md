@@ -3,6 +3,7 @@
 > **Version:** 0.2.0 · **Status:** In Development · **Last Updated:** March 2026  
 > **Author:** Chima Ben · **Stack:** Next.js 16, Supabase, Tailwind CSS, Paystack, Resend
 
+
 ---
 
 ## Table of Contents
@@ -33,9 +34,9 @@
 
 | Attribute | Details |
 |---|---|
-| Live URL | [https://campuscrib.net] — PLACEHOLDER |
-| Repository | [https://github.com/YOUR_USERNAME/campus-crib] — PLACEHOLDER |
-| Target Users | University Students, Landlords, Admins |
+| Live URL | [https://campuscri-b.netlify.app/] |
+| Repository | [https://github.com/benmarcel/campusCrib.git]|
+| Target Users | University Students, Landlords |
 | Core Value | Verified listings, visit scheduling, roommate matching |
 
 ---
@@ -398,7 +399,7 @@ Three user roles stored in `profiles.role`:
 | Save Listings | Students bookmark listings for later review |
 | Visit Booking | Students schedule onsite tours with date, time, and contact info |
 | Reviews | Star ratings (1–5) and written comments on listings |
-| Apartment Verification | Landlords pay ₦5,000 verification fee. Admins approve/reject |
+| Apartment Verification | Landlords pay ₦1,000 verification fee. Admins approve/reject |
 | Admin Dashboard | Tabbed queue for pending users and apartments with live counts |
 | Find Roomie — Browse | Grid of active roommate profiles with request status badges |
 | Find Roomie — Create Profile | Form to create/edit roommate profile with habits and bio |
@@ -456,7 +457,7 @@ Campus Crib uses **Paystack** for all payments — Nigerian-native, handles NGN,
 ```
 Landlord clicks "Pay to request verification"
   → initiateVerificationPayment() creates pending payment record
-  → Paystack popup opens (₦5,000)
+  → Paystack popup opens (₦1,000)
   → On payment success:
       → Webhook fires → verifies signature → updates verification_payments
       → Sets apartments.verification_status = 'pending_review'
